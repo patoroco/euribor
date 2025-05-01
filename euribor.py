@@ -83,14 +83,14 @@ def send_request_per_day():
     except requests.exceptions.RequestException:
         print('HTTP Request failed')
 
-def send_request_per_month():
+def send_request_per_month(year=2025):
     # get euribor rate
     # GET https://www.euribor-rates.eu/umbraco/api/euriborpageapi/highchartsdata
 
-    min_date = "2012-01-01"
+    min_date = f"{year}-01-01"
     min_date_timestamp = date_to_timestamp(min_date)
 
-    max_date = "2025-05-01"
+    max_date = f"{year+1}-01-01"
     max_date_timestamp = date_to_timestamp(max_date)
     
 
@@ -152,4 +152,5 @@ def send_request_per_month():
     except requests.exceptions.RequestException:
         print('HTTP Request failed')
 
-send_request_per_month()
+for year in range(2012, 2026):
+    send_request_per_month(year)
