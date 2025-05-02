@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import calendar
 import sys
 
-# Add parent directory to path to poder importar los módulos correctamente
+# Add parent directory to path to be able to import modules correctly
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the modules to test

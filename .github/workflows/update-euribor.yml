@@ -6,9 +6,9 @@ on:
     - cron: "0 10 * * *"
   workflow_dispatch: # Allow manual trigger
 
-# Definir permisos explícitamente para el token GITHUB_TOKEN
+# Define permissions explicitly for the GITHUB_TOKEN
 permissions:
-  contents: write # Necesario para hacer push al repositorio
+  contents: write # Needed to push to the repository
 
 jobs:
   update-euribor-data:
@@ -26,11 +26,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install -e .
 
       - name: Update Euribor rates
         run: |
-          python euribor.py
+          python -m src.euribor
 
       - name: Configure Git
         run: |
@@ -40,4 +40,4 @@ jobs:
       - name: Commit and push changes
         run: |
           git add api/
-          git diff --staged --quiet || (git commit -m "Update Euribor rates ($(date '+%Y-%m-%d %H:%M:%S %Z') [skip ci]" && git push)
+          git diff --staged --quiet || (git commit -m "Update Euribor rates [skip ci]" && git push)

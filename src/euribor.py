@@ -2,6 +2,7 @@
 Main module for the Euribor API.
 Fetches and processes Euribor rate data.
 """
+from datetime import datetime
 import requests
 import os
 from pprint import pprint
@@ -13,18 +14,30 @@ from src.date_utils import (
     extract_month
 )
 
-def send_request_per_day():
+def send_request_per_day(year=2025, month=4):
     """
     Fetch daily Euribor rates and save them to files.
     Each rate is saved in a file named by the date (YYYY-MM-DD).
+    
+    Args:
+        year (int): The year to fetch data for
+        month (int): The month to fetch data for
     """
     # get euribor rate
     # GET https://www.euribor-rates.eu/umbraco/api/euriborpageapi/highchartsdata
 
-    min_date = "2024-01-01"
+    min_date = f"{year}-{month:02d}-01"
     min_date_timestamp = date_to_timestamp(min_date)
 
-    max_date = "2025-01-01"
+    # Calculate next month
+    if month == 12:
+        next_month = 1
+        next_year = year + 1
+    else:
+        next_month = month + 1
+        next_year = year
+
+    max_date = f"{next_year}-{next_month:02d}-01"
     max_date_timestamp = date_to_timestamp(max_date)
     
     try:
@@ -64,7 +77,6 @@ def send_request_per_day():
 
     except requests.exceptions.RequestException:
         print('HTTP Request failed')
-
 def send_request_per_month(year=2025):
     """
     Fetch Euribor rates for a specific year and calculate monthly averages.
@@ -142,5 +154,11 @@ def send_request_per_month(year=2025):
 
 # Only run this if the script is executed directly
 if __name__ == "__main__":
-    for year in range(2012, 2026):
+    for year in range(2024, 2026):
         send_request_per_month(year) 
+        
+    current_year = datetime.now().year
+    current_month = datetime.now().month
+
+    for month in range(1, current_month):
+        send_request_per_day(current_year, month)
