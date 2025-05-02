@@ -61,10 +61,43 @@ You can easily integrate this API with Google Sheets using custom functions. Her
 
 ```javascript
 /**
+ * Formats a date for the Euribor API
+ *
+ * @param {string|Date} date - Date to format
+ * @param {boolean} isMonthly - Whether this is for monthly data (true) or daily data (false)
+ * @return {string} Formatted date path for the API
+ */
+function formatDateForAPI(date, isMonthly) {
+  let year, month, day;
+
+  if (typeof date === "string") {
+    // If already a string, split by common separators
+    const parts = date.split(/[-/\.]/);
+    if (parts.length >= 2) {
+      year = parts[0];
+      month = parts[1].padStart(2, "0");
+      day = parts.length > 2 ? parts[2].padStart(2, "0") : "";
+    } else {
+      return date; // Return as is if format can't be determined
+    }
+  } else if (date instanceof Date) {
+    // If it's a Date object, format it
+    year = date.getFullYear();
+    month = (date.getMonth() + 1).toString().padStart(2, "0");
+    day = date.getDate().toString().padStart(2, "0");
+  } else {
+    return date.toString(); // Return string representation for unknown types
+  }
+
+  // Return path formatted for API: YYYY/MM/DD for daily or YYYY/MM for monthly
+  return isMonthly ? `${year}/${month}` : `${year}/${month}/${day}`;
+}
+
+/**
  * Fetches Euribor data from the API
  *
  * @param {string} type - The type of data to fetch: "daily" or "monthly"
- * @param {string} date - Date in YYYY/MM/DD format for daily rates or YYYY/MM for monthly rates
+ * @param {string|Date} date - Date to fetch rate for
  * @return {string} The Euribor rate or error message
  */
 function EURIBOR(type, date) {
@@ -72,7 +105,9 @@ function EURIBOR(type, date) {
     return "UNDEFINED";
   }
 
-  const url = `https://patoroco.github.io/euribor/api/${type}/${date}`;
+  const isMonthly = type === "monthly";
+  const formattedDate = formatDateForAPI(date, isMonthly);
+  const url = `https://patoroco.github.io/euribor/api/${type}/${formattedDate}`;
 
   try {
     const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
@@ -91,7 +126,7 @@ function EURIBOR(type, date) {
 /**
  * Fetches daily Euribor rate for a specific date
  *
- * @param {string} date - Date in YYYY/MM/DD format
+ * @param {string|Date} date - Date to fetch rate for (YYYY-MM-DD, YYYY/MM/DD, or Date object)
  * @return {string} The daily Euribor rate
  */
 function EURIBOR_DAILY(date) {
@@ -101,7 +136,7 @@ function EURIBOR_DAILY(date) {
 /**
  * Fetches monthly average Euribor rate
  *
- * @param {string} yearMonth - Year and month in YYYY/MM format
+ * @param {string|Date} yearMonth - Year and month to fetch average for (YYYY-MM, YYYY/MM, or Date object)
  * @return {string} The monthly average Euribor rate
  */
 function EURIBOR_MONTHLY(yearMonth) {
@@ -116,8 +151,8 @@ function EURIBOR_MONTHLY(yearMonth) {
 3. Paste the code above
 4. Save and close the script editor
 5. In your sheet, you can now use:
-   - `=EURIBOR_DAILY("2024/12/27")` for daily rates
-   - `=EURIBOR_MONTHLY("2024/12")` for monthly averages
+   - `=EURIBOR_DAILY("2024/12/27")` or `=EURIBOR_DAILY(DATE(2024,12,27))` for daily rates
+   - `=EURIBOR_MONTHLY("2024/12")` or `=EURIBOR_MONTHLY(DATE(2024,12,1))` for monthly averages
 
 ## License
 
