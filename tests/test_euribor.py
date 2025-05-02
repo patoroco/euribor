@@ -69,10 +69,13 @@ def mock_requests_get(monkeypatch):
 @pytest.fixture
 def temp_dir(tmp_path):
     """Create a temporary directory for testing file operations"""
-    # Create the api directory structure
+    # Create the api directory structure with nested folders
     (tmp_path / "api").mkdir()
     (tmp_path / "api" / "daily").mkdir()
     (tmp_path / "api" / "monthly").mkdir()
+    (tmp_path / "api" / "daily" / "2021").mkdir()
+    (tmp_path / "api" / "daily" / "2021" / "01").mkdir()
+    (tmp_path / "api" / "monthly" / "2021").mkdir()
     
     # Return the temporary path
     return tmp_path
@@ -85,7 +88,7 @@ class TestEuriborDataFetching:
         """Test the structure of API requests"""
         with mock.patch('requests.get') as mock_get:
             mock_get.return_value = MOCK_RESPONSE
-            send_request_per_day()
+            send_request_per_day(2021, 1)
             
             # Verify the mock was called with the correct URL
             args, kwargs = mock_get.call_args
@@ -104,13 +107,15 @@ class TestEuriborFileOperations:
         """Test that directories are created if they don't exist"""
         # Test for directory creation in send_request_per_day
         with mock.patch('builtins.open', mock.mock_open()) as mock_file:
-            send_request_per_day()
-            mock_makedirs.assert_any_call('api', exist_ok=True)
+            send_request_per_day(2021, 1)
+            # Check that proper nested directory is created
+            mock_makedirs.assert_any_call(os.path.join('api', 'daily', '2021', '01'), exist_ok=True)
         
         # Test for directory creation in send_request_per_month
         with mock.patch('builtins.open', mock.mock_open()) as mock_file:
             send_request_per_month(2021)
-            mock_makedirs.assert_any_call("api/monthly", exist_ok=True)
+            # Check that proper nested directory is created
+            mock_makedirs.assert_any_call(os.path.join('api', 'monthly', '2021'), exist_ok=True)
 
     def test_file_writing_per_day(self, temp_dir, mock_requests_get):
         """Test file writing in send_request_per_day function"""
@@ -120,16 +125,24 @@ class TestEuriborFileOperations:
         try:
             # Mock the file writing
             with mock.patch('builtins.open', mock.mock_open()) as mock_file:
-                send_request_per_day()
+                send_request_per_day(2021, 1)
                 
                 # Check if the file was opened for writing
                 mock_file.assert_called()
                 
-                # Get all write calls
-                write_calls = mock_file().write.call_args_list
+                # Verify at least one call was to the correct path format
+                call_args_list = mock_file.call_args_list
                 
-                # Check if at least one write call was made
-                assert len(write_calls) > 0
+                # Check that at least one path has the correct format
+                path_format_found = False
+                for call in call_args_list:
+                    path = call[0][0]
+                    # The path should be something like api/daily/2021/01/01
+                    if path.startswith(os.path.join('api', 'daily', '2021', '01')):
+                        path_format_found = True
+                        break
+                        
+                assert path_format_found, "No file path with the expected format was used"
         finally:
             # Restore original directory
             os.chdir(original_dir)
@@ -147,11 +160,19 @@ class TestEuriborFileOperations:
                 # Check if the file was opened for writing
                 mock_file.assert_called()
                 
-                # Get all write calls
-                write_calls = mock_file().write.call_args_list
+                # Verify at least one call was to the correct path format
+                call_args_list = mock_file.call_args_list
                 
-                # Check if at least one write call was made
-                assert len(write_calls) > 0
+                # Check that at least one path has the correct format
+                path_format_found = False
+                for call in call_args_list:
+                    path = call[0][0]
+                    # The path should be something like api/monthly/2021/01
+                    if path.startswith(os.path.join('api', 'monthly', '2021')):
+                        path_format_found = True
+                        break
+                        
+                assert path_format_found, "No file path with the expected format was used"
         finally:
             # Restore original directory
             os.chdir(original_dir)
@@ -166,7 +187,7 @@ class TestEuriborIntegration:
         with mock.patch('os.makedirs'):
             with mock.patch('builtins.open', mock.mock_open()):
                 # Test if these functions run without errors
-                send_request_per_day()
+                send_request_per_day(2021, 1)
                 send_request_per_month(2021)
 
 

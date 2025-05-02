@@ -64,11 +64,15 @@ def send_request_per_day(year=2025, month=4):
                     # Extract date from datetime string (YYYY-MM-DD)
                     date = extract_date(date_str)
                     
-                    # Create directory if it doesn't exist
-                    os.makedirs('api', exist_ok=True)
+                    # Parse date components
+                    year, month, day = date.split('-')
+                    
+                    # Create directory structure
+                    directory = os.path.join('api', 'daily', year, month)
+                    os.makedirs(directory, exist_ok=True)
                     
                     # Create file path
-                    file_path = os.path.join('api', date)
+                    file_path = os.path.join(directory, day)
                     
                     # Write value to file
                     with open(file_path, 'w') as f:
@@ -140,14 +144,22 @@ def send_request_per_month(year=2025):
             # Print monthly averages
             pprint(monthly_averages)
             
-            # Create directory if it doesn't exist
-            os.makedirs("api/monthly", exist_ok=True)
-            
-            # Write each monthly average to its corresponding file
-            for month, average in monthly_averages.items():
-                file_path = f"api/monthly/{month}"
+            # Process and write monthly averages
+            for month_key, average in monthly_averages.items():
+                # Extract year and month from the key (YYYY-MM format)
+                year, month = month_key.split('-')
+                
+                # Create directory structure
+                directory = os.path.join("api", "monthly", year)
+                os.makedirs(directory, exist_ok=True)
+                
+                # Create file path
+                file_path = os.path.join(directory, month)
+                
+                # Write average to file
                 with open(file_path, 'w') as f:
                     f.write(str(average))
+                    print(f'File {file_path} created')
 
     except requests.exceptions.RequestException:
         print('HTTP Request failed')
