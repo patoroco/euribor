@@ -41,10 +41,3 @@ dmypy.json
 *.swo
 *~
 .DS_Store
-
-# Project specific
-api/
-!api/.gitkeep
-
-# UV generated
-.uv/
