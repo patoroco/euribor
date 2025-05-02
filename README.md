@@ -55,6 +55,70 @@ api/
         └── ...
 ```
 
+## Google Sheets Integration
+
+You can easily integrate this API with Google Sheets using custom functions. Here's an example of the functions:
+
+```javascript
+/**
+ * Fetches Euribor data from the API
+ *
+ * @param {string} type - The type of data to fetch: "daily" or "monthly"
+ * @param {string} date - Date in YYYY/MM/DD format for daily rates or YYYY/MM for monthly rates
+ * @return {string} The Euribor rate or error message
+ */
+function EURIBOR(type, date) {
+  if (date === undefined) {
+    return "UNDEFINED";
+  }
+
+  const url = `https://patoroco.github.io/euribor/api/${type}/${date}`;
+
+  try {
+    const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const statusCode = response.getResponseCode();
+
+    if (statusCode !== 200) {
+      return "NODATA";
+    }
+
+    return response.getContentText();
+  } catch (error) {
+    return "ERROR";
+  }
+}
+
+/**
+ * Fetches daily Euribor rate for a specific date
+ *
+ * @param {string} date - Date in YYYY/MM/DD format
+ * @return {string} The daily Euribor rate
+ */
+function EURIBOR_DAILY(date) {
+  return EURIBOR("daily", date);
+}
+
+/**
+ * Fetches monthly average Euribor rate
+ *
+ * @param {string} yearMonth - Year and month in YYYY/MM format
+ * @return {string} The monthly average Euribor rate
+ */
+function EURIBOR_MONTHLY(yearMonth) {
+  return EURIBOR("monthly", yearMonth);
+}
+```
+
+### Usage in Google Sheets
+
+1. Open your Google Sheet
+2. Go to Extensions > Apps Script
+3. Paste the code above
+4. Save and close the script editor
+5. In your sheet, you can now use:
+   - `=EURIBOR_DAILY("2024/12/27")` for daily rates
+   - `=EURIBOR_MONTHLY("2024/12")` for monthly averages
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
