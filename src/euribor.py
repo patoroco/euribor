@@ -44,7 +44,7 @@ def send_request_per_day(year=2025, month=4):
         response = requests.get(
             url="https://www.euribor-rates.eu/umbraco/api/euriborpageapi/highchartsdata",
             params={
-                "series[0]": "4",
+                "series[0]": "4", # series[0] = 4 -> 12-months
                 "minticks": min_date_timestamp,
                 "maxticks": max_date_timestamp,
             },
@@ -102,7 +102,7 @@ def send_request_per_month(year=2025):
         response = requests.get(
             url="https://www.euribor-rates.eu/umbraco/api/euriborpageapi/highchartsdata",
             params={
-                "series[0]": "4",
+                "series[0]": "4", # series[0] = 4 -> 12-months
                 "minticks": min_date_timestamp,
                 "maxticks": max_date_timestamp,
             },

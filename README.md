@@ -55,6 +55,40 @@ api/
         └── ...
 ```
 
+## Development
+
+This project uses UV, an ultra-fast Python package manager, for dependency management and virtual environments.
+
+### Setting up the development environment
+
+1. **Install UV**:
+
+   ```bash
+   curl -fsSL https://astral.sh/uv/install.sh | bash
+   ```
+
+2. **Create virtual environment**:
+
+   ```bash
+   uv venv .venv
+   source .venv/bin/activate  # Linux/macOS
+   # or
+   # .venv\Scripts\activate  # Windows
+   ```
+
+3. **Install dependencies**:
+
+   ```bash
+   uv pip install -e ".[dev]"  # Install package with development dependencies
+   ```
+
+4. **Run tests**:
+   ```bash
+   python -m pytest
+   ```
+
+For more information on UV, visit the [UV official website](https://astral.sh/uv).
+
 ## Google Sheets Integration
 
 You can easily integrate this API with Google Sheets using custom functions. Here's an example of the functions:
