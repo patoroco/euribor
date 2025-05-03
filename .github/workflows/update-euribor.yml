@@ -2,8 +2,8 @@ name: Update Euribor Rates
 
 on:
   schedule:
-    # Run every day at 10:00 UTC
-    - cron: "0 10 * * *"
+    # Run every hour from 09:00 to 14:00 UTC, Monday through Friday
+    - cron: "0 9-14 * * 1-5"
   workflow_dispatch: # Allow manual trigger
 
 # Define permissions explicitly for the GITHUB_TOKEN
@@ -40,4 +40,4 @@ jobs:
       - name: Commit and push changes
         run: |
           git add api/
-          git diff --staged --quiet || (git commit -m "Update Euribor rates ($(date '+%Y-%m-%d %H:%M:%S %Z')) [skip ci]" && git push)
+          git diff --staged --quiet || (git commit -m "Update Euribor rates ($(TZ=Europe/Madrid date '+%Y-%m-%d %H:%M:%S %Z')) [skip ci]" && git push)
