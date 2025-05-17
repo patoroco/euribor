@@ -5,6 +5,7 @@ Fetches and processes Euribor rate data.
 from datetime import datetime
 import requests
 import os
+import json
 
 from src.date_utils import (
     date_to_timestamp,
@@ -137,6 +138,67 @@ def process_monthly_data(data):
         with open(file_path, 'w') as f:
             f.write(str(average))
             print(f'File {file_path} created')
+        
+        # Update or create the year's JSON file
+        generate_yearly_json(year, month, average)
+
+def generate_yearly_json(year, month, value):
+    """
+    Generate or update JSON file with monthly averages for a specific year.
+    
+    Args:
+        year (str): The year
+        month (str): The month (01-12)
+        value (float): The average Euribor rate for the month
+    """
+    # Create directory if not exists
+    api_dir = os.path.join("api", year)
+    os.makedirs(api_dir, exist_ok=True)
+    
+    # JSON file path
+    json_file = os.path.join(api_dir, "index.json")
+    
+    # Initialize data structure
+    data = {}
+    
+    # Read existing file if it exists
+    if os.path.exists(json_file):
+        try:
+            with open(json_file, 'r') as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            # If file exists but is not valid JSON, initialize as empty
+            data = {}
+    
+    # Check if we need to update the last_modified date
+    # Only update if the month doesn't exist or if the value has changed
+    should_update_date = False
+    if month not in data:
+        should_update_date = True
+    elif data[month]["value"] != str(value):
+        should_update_date = True
+    
+    # Current datetime in ISO format for last_modified
+    current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    
+    # If entry exists and we don't need to update the date, keep the old last_modified
+    last_modified = current_datetime
+    if month in data and not should_update_date and "_meta" in data[month] and "last_modified" in data[month]["_meta"]:
+        last_modified = data[month]["_meta"]["last_modified"]
+    
+    # Update data for this month
+    data[month] = {
+        "value": str(value),
+        "_meta": {
+            "full_date": f"{year}-{month}",
+            "last_modified": last_modified
+        }
+    }
+    
+    # Write updated data to JSON file
+    with open(json_file, 'w') as f:
+        json.dump(data, f, indent=2)
+        print(f'Updated {json_file} with data for {year}-{month}')
 
 def send_request_per_day(year=2025, month=4):
     """
@@ -180,6 +242,38 @@ def send_request_per_month(year=2025):
     data = fetch_euribor_data(min_date, max_date)
     process_monthly_data(data)
 
+def generate_all_yearly_json():
+    """
+    Generate JSON files with monthly averages for all years
+    by reading data from existing files.
+    """
+    monthly_dir = os.path.join("api", "monthly")
+    
+    if not os.path.exists(monthly_dir):
+        print("No monthly data found. Run send_request_per_month first.")
+        return
+    
+    # List all year directories
+    year_dirs = [d for d in os.listdir(monthly_dir) 
+                if os.path.isdir(os.path.join(monthly_dir, d))]
+    
+    for year in year_dirs:
+        year_path = os.path.join(monthly_dir, year)
+        
+        # List all month files in this year directory
+        month_files = [f for f in os.listdir(year_path) 
+                      if os.path.isfile(os.path.join(year_path, f))]
+        
+        for month in month_files:
+            # Read the monthly average
+            with open(os.path.join(year_path, month), 'r') as f:
+                value = float(f.read().strip())
+            
+            # Generate or update the JSON file
+            generate_yearly_json(year, month, value)
+    
+    print("All yearly JSON files generated successfully.")
+
 # Only run this if the script is executed directly
 if __name__ == "__main__":
     current_year = datetime.now().year
@@ -187,3 +281,6 @@ if __name__ == "__main__":
 
     send_request_per_month(current_year)
     send_request_per_day(current_year, current_month)
+    
+    # Generate JSON files for all years
+    generate_all_yearly_json()
