@@ -7,6 +7,8 @@ import requests
 import os
 import json
 import calendar
+import argparse
+import sys
 
 from src.date_utils import (
     date_to_timestamp,
@@ -53,22 +55,43 @@ def fetch_euribor_data(start_date, end_date):
         print(f'HTTP Request failed: {e}')
         return None
 
-def process_daily_data(data):
+def process_daily_data(year, month):
     """
-    Process daily Euribor rates and prepare data for JSON files.
+    Process daily Euribor rates for a specific year and month.
     
     Args:
-        data (list): JSON data from the API
+        year (int or str): The year to process
+        month (int or str): The month to process
         
     Returns:
         dict: Statistics about the processing and daily data organized by year/month
     """
+    # Calculate date range
+    year_str = str(year)
+    month_str = f"{int(month):02d}"
+    
+    # Calculate date range
+    min_date = f"{year_str}-{month_str}-01"
+    
+    # Calculate next month for end date
+    if int(month_str) == 12:
+        next_month = 1
+        next_year = int(year_str) + 1
+    else:
+        next_month = int(month_str) + 1
+        next_year = int(year_str)
+
+    max_date = f"{next_year}-{next_month:02d}-01"
+    
+    # Fetch data
+    data = fetch_euribor_data(min_date, max_date)
+    
     if not data:
         return {"days_processed": 0, "daily_data": {}}
     
     days_processed = 0
-    # Track daily data for each month to generate monthly JSON files
-    monthly_daily_data = {}
+    # Track daily data for this month to generate monthly JSON files
+    daily_data = {}
         
     for series in data:
         for point in series['Data']:
@@ -79,25 +102,14 @@ def process_daily_data(data):
             date = extract_date(date_str)
             
             # Parse date components
-            year, month, day = date.split('-')
+            date_year, date_month, day = date.split('-')
             
-            # Add data to monthly_daily_data for JSON files
-            if year not in monthly_daily_data:
-                monthly_daily_data[year] = {}
-            if month not in monthly_daily_data[year]:
-                monthly_daily_data[year][month] = {}
-            
-            monthly_daily_data[year][month][day] = value
-            days_processed += 1
+            # Only include data for the requested year and month
+            if date_year == year_str and date_month == month_str:
+                daily_data[day] = value
+                days_processed += 1
     
-    # Generate JSON files for each month
-    for year in monthly_daily_data:
-        for month in monthly_daily_data[year]:
-            daily_data = monthly_daily_data[year][month]
-            if daily_data:  # Only process if there's data
-                generate_monthly_json(year, month, daily_data)
-    
-    return {"days_processed": days_processed, "daily_data": monthly_daily_data}
+    return {"days_processed": days_processed, "daily_data": daily_data}
 
 def process_monthly_data(data):
     """
@@ -148,11 +160,11 @@ def process_monthly_data(data):
         year, month = month_key.split('-')
         
         # Update or create the year's JSON file
-        generate_yearly_json(year, month, average)
+        update_yearly_json(year, month, average)
     
     return {"months_processed": months_processed, "monthly_averages": monthly_average_values}
 
-def generate_yearly_json(year, month, value):
+def update_yearly_json(year, month, value):
     """
     Generate or update JSON file with monthly averages for a specific year.
     
@@ -312,22 +324,13 @@ def send_request_per_day(year=2025, month=4):
     Returns:
         dict: Statistics about the processing
     """
-    # Calculate date range
-    min_date = f"{year}-{month:02d}-01"
+    result = process_daily_data(year, month)
     
-    # Calculate next month for end date
-    if month == 12:
-        next_month = 1
-        next_year = year + 1
-    else:
-        next_month = month + 1
-        next_year = year
-
-    max_date = f"{next_year}-{next_month:02d}-01"
+    # Generate the monthly JSON file if we have daily data
+    if result["days_processed"] > 0:
+        generate_monthly_json(str(year), f"{month:02d}", result["daily_data"])
     
-    # Fetch and process data
-    data = fetch_euribor_data(min_date, max_date)
-    return process_daily_data(data)
+    return result
 
 def send_request_per_month(year=2025):
     """
@@ -347,110 +350,176 @@ def send_request_per_month(year=2025):
     data = fetch_euribor_data(min_date, max_date)
     return process_monthly_data(data)
 
-def generate_all_yearly_json():
+def generate_all_yearly_json(years=None):
     """
-    Generate JSON files with monthly averages for all years
-    by fetching and processing data directly.
+    Generate JSON files with monthly averages for specified years
+    by ensuring they are properly formatted and sorted.
+    
+    Args:
+        years (list, optional): List of years to process. If None, process all years from 1999 to current.
     """
     current_year = datetime.now().year
     
-    # Generate yearly JSON files for the past years that we want to track
-    start_year = 1999  # Start from 1999 or any other year you want
+    # If years not specified, default to historical range
+    if years is None:
+        years = list(range(1999, current_year + 1))
     
-    # Track statistics for reporting
-    years_processed = 0
-    months_processed = 0
-    earliest_year = None
-    latest_year = None
+    # Create sorted JSON files for each year
+    for year in years:
+        create_yearly_json(str(year))
     
-    for year in range(start_year, current_year + 1):
-        result = send_request_per_month(year)
-        
-        if result["months_processed"] > 0:
-            years_processed += 1
-            months_processed += result["months_processed"]
-            
-            # Track earliest and latest years
-            if earliest_year is None or year < earliest_year:
-                earliest_year = year
-            if latest_year is None or year > latest_year:
-                latest_year = year
-    
-    # Report statistics if any work was done
-    if years_processed > 0:
-        year_range = f"from {earliest_year} to {latest_year}" if earliest_year and latest_year else ""
-        print(f"JSON files processed for {years_processed} years ({year_range}).")
-        print(f"Processed {months_processed} months of data.")
+    if years:
+        print(f"Ensured all yearly JSON files are properly formatted for {len(years)} years")
     else:
-        print("No data found to process.")
+        print("No yearly JSON files to process")
 
-def generate_all_monthly_json():
+def generate_all_monthly_json(months_to_process=None):
     """
-    Generate JSON files with daily data for all months by fetching and processing data.
-    """
-    current_year = datetime.now().year
-    current_month = datetime.now().month
+    Generate JSON files with daily data for specified years and months by fetching and processing data.
     
-    # Generate monthly JSON files for the past years that we want to track
-    start_year = 1999  # Start from 1999 or any other year you want
+    Args:
+        months_to_process (dict, optional): Dictionary mapping year -> list of months to process.
+                                           If None, defaults to current year/month.
+    """
+    if months_to_process is None:
+        today = datetime.now()
+        months_to_process = {today.year: [today.month]}
     
     # Track statistics for reporting
-    years_processed = 0
-    months_processed = 0
-    days_processed = 0
-    earliest_year = None
-    latest_year = None
+    total_months = 0
+    total_days = 0
     
-    for year in range(start_year, current_year + 1):
-        year_has_data = False
-        
-        # Determine how many months to process for this year
-        max_month = 12
-        if year == current_year:
-            max_month = current_month
-        
-        for month in range(1, max_month + 1):
+    for year, months in months_to_process.items():
+        for month in months:
             result = send_request_per_day(year, month)
-            
             if result["days_processed"] > 0:
-                months_processed += 1
-                days_processed += result["days_processed"]
-                year_has_data = True
-        
-        if year_has_data:
-            years_processed += 1
-            
-            # Track earliest and latest years
-            if earliest_year is None or year < earliest_year:
-                earliest_year = year
-            if latest_year is None or year > latest_year:
-                latest_year = year
+                total_months += 1
+                total_days += result["days_processed"]
     
-    # Report statistics if any work was done
-    if years_processed > 0:
-        year_range = f"from {earliest_year} to {latest_year}" if earliest_year and latest_year else ""
-        print(f"Monthly JSON files processed for {years_processed} years ({year_range}).")
-        print(f"Processed {months_processed} months with {days_processed} days of data.")
+    # Report statistics if any data was found
+    if total_months > 0:
+        print(f"Monthly JSON files processed for {len(months_to_process)} years (from {min(months_to_process.keys())} to {max(months_to_process.keys())}).")
+        print(f"Processed {total_months} months with {total_days} days of data.")
     else:
-        print("No data found to process.")
+        print("No daily data found to process.")
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Process Euribor data')
+    parser.add_argument('--year', type=int, help='Year to process (defaults to current year and previous year if currently in January)')
+    parser.add_argument('--month', type=int, help='Month to process (defaults to current month and previous month if in first week)')
+    parser.add_argument('--all', action='store_true', help='Process all years from 1999 to current')
+    args = parser.parse_args()
+    
+    # Get current year and month
+    today = datetime.now()
+    current_year = today.year
+    current_month = today.month
+    current_day = today.day  # Actual current day
+    
+    # Determine which years and months to process
+    months_to_process = {}
+    
+    if args.all:
+        # Process from 1999 to current year
+        for year in range(1999, current_year + 1):
+            months_to_process[year] = list(range(1, 13)) if year != current_year else list(range(1, current_month + 1))
+    elif args.year is not None:
+        # Process a specific year
+        year = args.year
+        if args.month is not None:
+            # Process a specific month in a specific year
+            months_to_process[year] = [args.month]
+        else:
+            # Process all months in the specific year (up to current month if it's the current year)
+            months_to_process[year] = list(range(1, 13)) if year != current_year else list(range(1, current_month + 1))
+    else:
+        # Default: process current month
+        if args.month is not None:
+            # Process a specific month in the current year
+            months_to_process[current_year] = [args.month]
+        else:
+            # Process current month and possibly previous month
+            if current_day <= 7:  # First week of the month
+                if current_month == 1:
+                    # If January, also process December of previous year
+                    months_to_process[current_year] = [current_month]
+                    months_to_process[current_year - 1] = [12]
+                else:
+                    # Process current and previous month of the same year
+                    months_to_process[current_year] = [current_month, current_month - 1]
+            else:
+                # Just process current month
+                months_to_process[current_year] = [current_month]
+    
+    return args, months_to_process
+
+def create_yearly_json(year):
+    """
+    Create or update yearly JSON file with all monthly data for the specified year.
+    
+    Args:
+        year (int or str): The year to process
+    """
+    # Convert year to string if it's an integer
+    year_str = str(year)
+    
+    # Create directory if not exists
+    api_dir = os.path.join("api", year_str)
+    os.makedirs(api_dir, exist_ok=True)
+    
+    # JSON file path
+    json_file = os.path.join(api_dir, "index.json")
+    
+    # Read existing file if it exists
+    data = {}
+    if os.path.exists(json_file):
+        try:
+            with open(json_file, 'r') as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            data = {}
+    
+    # Sort the data by month number
+    ordered_data = {}
+    months = sorted(data.keys(), key=int)
+    for m in months:
+        ordered_data[m] = data[m]
+    
+    # Write ordered data to JSON file
+    with open(json_file, 'w') as f:
+        json.dump(ordered_data, f, indent=2)
+    
+    return data
 
 # Only run this if the script is executed directly
 if __name__ == "__main__":
-    current_year = datetime.now().year
-    current_month = datetime.now().month
-
-    print(f"Updating Euribor rates for {current_year}/{current_month:02d}...")
+    args, months_to_process = parse_args()
     
-    # Process monthly data for the current year
-    monthly_result = send_request_per_month(current_year)
+    # Process data for each selected year and month
+    years = sorted(months_to_process.keys())
+    for year in years:
+        specific_months = sorted(months_to_process[year])
+        
+        # Process monthly data for the year
+        print(f"Updating monthly data for {year}...")
+        monthly_result = send_request_per_month(year)
+        
+        # Process daily data for the specific months of this year
+        for month in specific_months:
+            print(f"Processing {year}/{month:02d}...")
+            daily_result = send_request_per_day(year, month)
+        
+        # Create yearly JSON file (with monthly averages)
+        create_yearly_json(year)
+                
+    # Print summary
+    total_years = len(years)
+    total_months = sum(len(months) for months in months_to_process.values())
+    print(f"JSON files processed for {total_years} years (from {min(years) if years else 'none'} to {max(years) if years else 'none'}).")
+    print(f"Processed {total_months} months of data.")
     
-    # Process daily data for the current month
-    daily_result = send_request_per_day(current_year, current_month)
-    
-    # Generate JSON files for all years
-    generate_all_yearly_json()
-    
-    # Generate JSON files for all months
-    generate_all_monthly_json()
+    # Generate all required JSON files
+    generate_all_yearly_json(years)
+    generate_all_monthly_json(months_to_process)
     
     print(f"Process completed.")

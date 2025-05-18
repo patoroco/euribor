@@ -14,10 +14,11 @@ import src.date_utils as date_utils
 from src.euribor import (
     send_request_per_day, 
     send_request_per_month, 
-    generate_yearly_json, 
+    update_yearly_json, 
     generate_monthly_json,
     generate_all_yearly_json,
-    generate_all_monthly_json
+    generate_all_monthly_json,
+    create_yearly_json
 )
 
 # Sample test data
@@ -140,7 +141,7 @@ class TestEuriborFileOperations:
 
     def test_process_monthly_data(self, mock_requests_get):
         """Test processing monthly data from API response"""
-        with mock.patch('src.euribor.generate_yearly_json') as mock_generate_json:
+        with mock.patch('src.euribor.update_yearly_json') as mock_generate_json:
             result = send_request_per_month(2021)
             
             # Check the result structure
@@ -148,7 +149,7 @@ class TestEuriborFileOperations:
             assert "monthly_averages" in result
             assert result["months_processed"] > 0
             
-            # Check that the generate_yearly_json function was called
+            # Check that the update_yearly_json function was called
             mock_generate_json.assert_called()
     
     def test_json_generation(self, temp_dir):
@@ -168,7 +169,7 @@ class TestEuriborFileOperations:
             # Patch the datetime class in the module being tested
             with mock.patch('src.euribor.datetime', datetime_mock):
                 # Test generating a new JSON file
-                generate_yearly_json('2021', '01', 3.456)
+                update_yearly_json('2021', '01', 3.456)
                 
                 # Verify the JSON file was created with the right content
                 json_file = os.path.join('api', '2021', 'index.json')
@@ -183,7 +184,7 @@ class TestEuriborFileOperations:
                 
                 # Test updating the same month with the same value
                 # The last_modified date should not change
-                generate_yearly_json('2021', '01', 3.456)
+                update_yearly_json('2021', '01', 3.456)
                 
                 with open(json_file, 'r') as f:
                     data = json.load(f)
@@ -192,7 +193,7 @@ class TestEuriborFileOperations:
                 # Test updating the same month with a different value
                 # The last_modified date should change
                 datetime_mock.now.return_value = datetime(2022, 1, 1, 12, 0, 0)
-                generate_yearly_json('2021', '01', 3.789)
+                update_yearly_json('2021', '01', 3.789)
                 
                 with open(json_file, 'r') as f:
                     data = json.load(f)

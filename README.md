@@ -135,6 +135,42 @@ This project uses UV, an ultra-fast Python package manager, for dependency manag
    python -m pytest
    ```
 
+### Running the Script
+
+The script can be run with various options to control which years and months to process:
+
+```bash
+# Process current month (and previous month if in first week)
+python -m src.euribor
+
+# Process a specific year
+python -m src.euribor --year 2024
+
+# Process a specific month of the current year
+python -m src.euribor --month 5
+
+# Process a specific year and month
+python -m src.euribor --year 2024 --month 5
+
+# Process all historical years (1999 to current)
+python -m src.euribor --all
+```
+
+Command line options:
+
+- `--year YEAR`: Process only the specified year
+- `--month MONTH`: Process only the specified month
+- `--all`: Process all years from 1999 to current
+- No arguments: Process the current month (and previous month if in first week of the month, or previous year's December if in January)
+
+Processing only the current month significantly speeds up execution, especially for automation via GitHub Actions.
+
+#### Smart defaults for automation:
+
+- If running in January, it also processes December of the previous year
+- If running in the first week of a month, it also processes the previous month
+- This ensures that any late updates to the previous period are captured
+
 For more information on UV, visit the [UV official website](https://astral.sh/uv).
 
 ## Google Sheets Integration
