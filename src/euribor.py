@@ -254,9 +254,20 @@ def generate_yearly_json(year, month, value):
         }
     }
     
-    # Write updated data to JSON file
+    # Sort the data by month number before writing to file
+    # Create a new ordered dictionary
+    ordered_data = {}
+    
+    # Get all months and sort them numerically
+    months = sorted(data.keys(), key=int)
+    
+    # Add each month to the ordered dictionary
+    for m in months:
+        ordered_data[m] = data[m]
+    
+    # Write ordered data to JSON file
     with open(json_file, 'w') as f:
-        json.dump(data, f, indent=2)
+        json.dump(ordered_data, f, indent=2)
     
     # Only print message if the data was actually updated or added
     if is_new_data:
@@ -327,9 +338,20 @@ def generate_monthly_json(year, month, daily_data):
             }
         }
     
-    # Write updated data to JSON file
+    # Sort the data by day number before writing to file
+    # Create a new ordered dictionary
+    ordered_data = {}
+    
+    # Get all days and sort them numerically
+    days = sorted(data.keys(), key=int)
+    
+    # Add each day to the ordered dictionary
+    for day in days:
+        ordered_data[day] = data[day]
+    
+    # Write ordered data to JSON file
     with open(json_file, 'w') as f:
-        json.dump(data, f, indent=2)
+        json.dump(ordered_data, f, indent=2)
     
     # Only print message if the data was actually updated or added
     if days_added > 0 or days_updated > 0:
