@@ -1,0 +1,212 @@
+{
+  "01": {
+    "value": "-0.168",
+    "_meta": {
+      "full_date": "2020-04-01",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "02": {
+    "value": "-0.153",
+    "_meta": {
+      "full_date": "2020-04-02",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "03": {
+    "value": "-0.149",
+    "_meta": {
+      "full_date": "2020-04-03",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "04": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-04",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "05": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-05",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "06": {
+    "value": "-0.134",
+    "_meta": {
+      "full_date": "2020-04-06",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "07": {
+    "value": "-0.122",
+    "_meta": {
+      "full_date": "2020-04-07",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "08": {
+    "value": "-0.09",
+    "_meta": {
+      "full_date": "2020-04-08",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "09": {
+    "value": "-0.087",
+    "_meta": {
+      "full_date": "2020-04-09",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "10": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-10",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "11": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-11",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "12": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-12",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "13": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-13",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "14": {
+    "value": "-0.105",
+    "_meta": {
+      "full_date": "2020-04-14",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "15": {
+    "value": "-0.11",
+    "_meta": {
+      "full_date": "2020-04-15",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "16": {
+    "value": "-0.098",
+    "_meta": {
+      "full_date": "2020-04-16",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "17": {
+    "value": "-0.105",
+    "_meta": {
+      "full_date": "2020-04-17",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "18": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-18",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "19": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-19",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "20": {
+    "value": "-0.091",
+    "_meta": {
+      "full_date": "2020-04-20",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "21": {
+    "value": "-0.078",
+    "_meta": {
+      "full_date": "2020-04-21",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "22": {
+    "value": "-0.053",
+    "_meta": {
+      "full_date": "2020-04-22",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "23": {
+    "value": "-0.066",
+    "_meta": {
+      "full_date": "2020-04-23",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "24": {
+    "value": "-0.083",
+    "_meta": {
+      "full_date": "2020-04-24",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "25": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-25",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "26": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-04-26",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "27": {
+    "value": "-0.109",
+    "_meta": {
+      "full_date": "2020-04-27",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "28": {
+    "value": "-0.114",
+    "_meta": {
+      "full_date": "2020-04-28",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "29": {
+    "value": "-0.131",
+    "_meta": {
+      "full_date": "2020-04-29",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  },
+  "30": {
+    "value": "-0.118",
+    "_meta": {
+      "full_date": "2020-04-30",
+      "last_modified": "2025-05-18T21:22:01"
+    }
+  }
+}

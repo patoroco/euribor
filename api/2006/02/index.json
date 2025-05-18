@@ -1,0 +1,198 @@
+{
+  "01": {
+    "value": "2.9",
+    "_meta": {
+      "full_date": "2006-02-01",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "02": {
+    "value": "2.916",
+    "_meta": {
+      "full_date": "2006-02-02",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "03": {
+    "value": "2.914",
+    "_meta": {
+      "full_date": "2006-02-03",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "04": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-04",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "05": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-05",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "06": {
+    "value": "2.909",
+    "_meta": {
+      "full_date": "2006-02-06",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "07": {
+    "value": "2.908",
+    "_meta": {
+      "full_date": "2006-02-07",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "08": {
+    "value": "2.906",
+    "_meta": {
+      "full_date": "2006-02-08",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "09": {
+    "value": "2.913",
+    "_meta": {
+      "full_date": "2006-02-09",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "10": {
+    "value": "2.901",
+    "_meta": {
+      "full_date": "2006-02-10",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "11": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-11",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "12": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-12",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "13": {
+    "value": "2.907",
+    "_meta": {
+      "full_date": "2006-02-13",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "14": {
+    "value": "2.899",
+    "_meta": {
+      "full_date": "2006-02-14",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "15": {
+    "value": "2.897",
+    "_meta": {
+      "full_date": "2006-02-15",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "16": {
+    "value": "2.905",
+    "_meta": {
+      "full_date": "2006-02-16",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "17": {
+    "value": "2.895",
+    "_meta": {
+      "full_date": "2006-02-17",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "18": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-18",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "19": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-19",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "20": {
+    "value": "2.88",
+    "_meta": {
+      "full_date": "2006-02-20",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "21": {
+    "value": "2.881",
+    "_meta": {
+      "full_date": "2006-02-21",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "22": {
+    "value": "2.912",
+    "_meta": {
+      "full_date": "2006-02-22",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "23": {
+    "value": "2.938",
+    "_meta": {
+      "full_date": "2006-02-23",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "24": {
+    "value": "2.956",
+    "_meta": {
+      "full_date": "2006-02-24",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "25": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-25",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "26": {
+    "value": null,
+    "_meta": {
+      "full_date": "2006-02-26",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "27": {
+    "value": "2.965",
+    "_meta": {
+      "full_date": "2006-02-27",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  },
+  "28": {
+    "value": "2.981",
+    "_meta": {
+      "full_date": "2006-02-28",
+      "last_modified": "2025-05-18T21:21:17"
+    }
+  }
+}

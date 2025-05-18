@@ -1,0 +1,205 @@
+{
+  "01": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-01",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "02": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-02",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "03": {
+    "value": "-0.29",
+    "_meta": {
+      "full_date": "2020-02-03",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "04": {
+    "value": "-0.288",
+    "_meta": {
+      "full_date": "2020-02-04",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "05": {
+    "value": "-0.278",
+    "_meta": {
+      "full_date": "2020-02-05",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "06": {
+    "value": "-0.27",
+    "_meta": {
+      "full_date": "2020-02-06",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "07": {
+    "value": "-0.269",
+    "_meta": {
+      "full_date": "2020-02-07",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "08": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-08",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "09": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-09",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "10": {
+    "value": "-0.269",
+    "_meta": {
+      "full_date": "2020-02-10",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "11": {
+    "value": "-0.276",
+    "_meta": {
+      "full_date": "2020-02-11",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "12": {
+    "value": "-0.288",
+    "_meta": {
+      "full_date": "2020-02-12",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "13": {
+    "value": "-0.287",
+    "_meta": {
+      "full_date": "2020-02-13",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "14": {
+    "value": "-0.293",
+    "_meta": {
+      "full_date": "2020-02-14",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "15": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-15",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "16": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-16",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "17": {
+    "value": "-0.294",
+    "_meta": {
+      "full_date": "2020-02-17",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "18": {
+    "value": "-0.292",
+    "_meta": {
+      "full_date": "2020-02-18",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "19": {
+    "value": "-0.288",
+    "_meta": {
+      "full_date": "2020-02-19",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "20": {
+    "value": "-0.294",
+    "_meta": {
+      "full_date": "2020-02-20",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "21": {
+    "value": "-0.287",
+    "_meta": {
+      "full_date": "2020-02-21",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "22": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-22",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "23": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-23",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "24": {
+    "value": "-0.284",
+    "_meta": {
+      "full_date": "2020-02-24",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "25": {
+    "value": "-0.295",
+    "_meta": {
+      "full_date": "2020-02-25",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "26": {
+    "value": "-0.306",
+    "_meta": {
+      "full_date": "2020-02-26",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "27": {
+    "value": "-0.303",
+    "_meta": {
+      "full_date": "2020-02-27",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "28": {
+    "value": "-0.311",
+    "_meta": {
+      "full_date": "2020-02-28",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  },
+  "29": {
+    "value": null,
+    "_meta": {
+      "full_date": "2020-02-29",
+      "last_modified": "2025-05-18T21:22:00"
+    }
+  }
+}
