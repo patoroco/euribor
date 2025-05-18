@@ -16,6 +16,64 @@ This project provides a simple API to access EURIBOR rates data. The data is aut
 - Example: `https://patoroco.github.io/euribor/api/monthly/2024/12`
 - Returns: The average EURIBOR rate for the specified month
 
+### JSON Data Format
+
+#### Yearly JSON with Monthly Averages
+
+- Format: `https://patoroco.github.io/euribor/api/{YYYY}/index.json`
+- Example: `https://patoroco.github.io/euribor/api/2024/index.json`
+- Returns: JSON object with monthly average EURIBOR rates for the specified year
+
+Example response:
+
+```json
+{
+  "01": {
+    "value": "3.589",
+    "_meta": {
+      "full_date": "2024-01",
+      "last_modified": "2024-05-21T10:00:00"
+    }
+  },
+  "02": {
+    "value": "3.572",
+    "_meta": {
+      "full_date": "2024-02",
+      "last_modified": "2024-05-21T10:00:00"
+    }
+  }
+  // ... other months
+}
+```
+
+#### Monthly JSON with Daily Rates
+
+- Format: `https://patoroco.github.io/euribor/api/{YYYY}/{MM}/index.json`
+- Example: `https://patoroco.github.io/euribor/api/2024/12/index.json`
+- Returns: JSON object with daily EURIBOR rates for the specified month
+
+Example response:
+
+```json
+{
+  "01": {
+    "value": "3.585",
+    "_meta": {
+      "full_date": "2024-12-01",
+      "last_modified": "2024-12-01T10:00:00"
+    }
+  },
+  "02": {
+    "value": "3.590",
+    "_meta": {
+      "full_date": "2024-12-02",
+      "last_modified": "2024-12-02T10:00:00"
+    }
+  }
+  // ... other days
+}
+```
+
 ## Data Source
 
 The data is collected from [euribor-rates.eu](https://www.euribor-rates.eu/) and updated automatically through GitHub Actions.
@@ -27,9 +85,10 @@ The data is updated daily at 10:00 UTC using a GitHub Action workflow. The workf
 1. Fetches the latest EURIBOR rates from euribor-rates.eu
 2. Updates daily rate files in the `/api/daily/{YYYY}/{MM}/{DD}` directory structure
 3. Calculates and updates monthly averages in the `/api/monthly/{YYYY}/{MM}` directory structure
-4. Commits and pushes changes to the repository
+4. Generates and updates JSON files for both yearly and monthly data
+5. Commits and pushes changes to the repository
 
-On the first run, the workflow will also populate historical data starting from 2012.
+On the first run, the workflow will also populate historical data starting from 1999.
 
 ## Directory Structure
 
@@ -46,13 +105,22 @@ api/
 │   │   └── ...
 │   └── 2025/
 │       └── ...
-└── monthly/
-    ├── 2024/
-    │   ├── 01  # Average rate for January 2024
-    │   ├── 02  # Average rate for February 2024
-    │   └── ...
-    └── 2025/
-        └── ...
+├── monthly/
+│   ├── 2024/
+│   │   ├── 01  # Average rate for January 2024
+│   │   ├── 02  # Average rate for February 2024
+│   │   └── ...
+│   └── 2025/
+│       └── ...
+├── 2024/
+│   ├── index.json  # JSON with all monthly averages for 2024
+│   ├── 01/
+│   │   └── index.json  # JSON with all daily rates for January 2024
+│   ├── 02/
+│   │   └── index.json  # JSON with all daily rates for February 2024
+│   └── ...
+└── 2025/
+    └── ...
 ```
 
 ## Development
@@ -176,6 +244,107 @@ function EURIBOR_DAILY(date) {
 function EURIBOR_MONTHLY(yearMonth) {
   return EURIBOR("monthly", yearMonth);
 }
+
+/**
+ * Fetches Euribor data from the JSON API
+ *
+ * @param {string} type - The type of data to fetch: "monthly" for yearly JSON or "daily" for monthly JSON
+ * @param {string|Date} date - Date to fetch rate for (YYYY for yearly, YYYY-MM for monthly)
+ * @param {string} key - The specific key to fetch (month number for yearly, day number for monthly)
+ * @param {string} field - The field to return (defaults to "value")
+ * @return {string} The Euribor rate or error message
+ */
+function EURIBOR_JSON(type, date, key, field = "value") {
+  if (date === undefined) {
+    return "UNDEFINED";
+  }
+
+  let year, month;
+
+  if (typeof date === "string") {
+    // If already a string, split by common separators
+    const parts = date.split(/[-/\.]/);
+    year = parts[0];
+    month = parts.length > 1 ? parts[1].padStart(2, "0") : "";
+  } else if (date instanceof Date) {
+    // If it's a Date object, format it
+    year = date.getFullYear();
+    month = (date.getMonth() + 1).toString().padStart(2, "0");
+  } else {
+    return "INVALID_DATE";
+  }
+
+  // Prepare path for API call
+  let url;
+  if (type === "monthly") {
+    // Yearly JSON with monthly data
+    url = `https://patoroco.github.io/euribor/api/${year}/index.json`;
+  } else if (type === "daily") {
+    // Monthly JSON with daily data
+    if (!month) return "MISSING_MONTH";
+    url = `https://patoroco.github.io/euribor/api/${year}/${month}/index.json`;
+  } else {
+    return "INVALID_TYPE";
+  }
+
+  try {
+    const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const statusCode = response.getResponseCode();
+
+    if (statusCode !== 200) {
+      return "NODATA";
+    }
+
+    const jsonData = JSON.parse(response.getContentText());
+
+    // If no key specified, return the entire JSON
+    if (!key) {
+      return JSON.stringify(jsonData);
+    }
+
+    // Ensure key is padded with zeros if it's a number
+    const paddedKey = isNaN(key) ? key : key.toString().padStart(2, "0");
+
+    // Check if the key exists
+    if (!jsonData[paddedKey]) {
+      return "KEY_NOT_FOUND";
+    }
+
+    // Return the requested field
+    if (field === "value") {
+      return jsonData[paddedKey].value;
+    } else if (field.startsWith("_meta.")) {
+      const metaField = field.split(".")[1];
+      return jsonData[paddedKey]._meta[metaField];
+    } else {
+      return "INVALID_FIELD";
+    }
+  } catch (error) {
+    return "ERROR: " + error.toString();
+  }
+}
+
+/**
+ * Fetches a specific day's value from the monthly JSON
+ *
+ * @param {string|Date} yearMonth - Year and month (YYYY-MM, YYYY/MM, or Date object)
+ * @param {string|number} day - The day to fetch (1-31)
+ * @return {string} The daily Euribor rate
+ */
+function EURIBOR_JSON_DAILY(yearMonth, day) {
+  return EURIBOR_JSON("daily", yearMonth, day);
+}
+
+/**
+ * Fetches a specific month's average from the yearly JSON
+ *
+ * @param {string|number} year - The year (YYYY)
+ * @param {string|number} month - The month to fetch (1-12)
+ * @return {string} The monthly average Euribor rate
+ */
+function EURIBOR_JSON_MONTHLY(year, month) {
+  return EURIBOR_JSON("monthly", year, month);
+}
 ```
 
 ### Usage in Google Sheets
@@ -185,8 +354,10 @@ function EURIBOR_MONTHLY(yearMonth) {
 3. Paste the code above
 4. Save and close the script editor
 5. In your sheet, you can now use:
-   - `=EURIBOR_DAILY("2024/12/27")` or `=EURIBOR_DAILY(DATE(2024,12,27))` for daily rates
-   - `=EURIBOR_MONTHLY("2024/12")` or `=EURIBOR_MONTHLY(DATE(2024,12,1))` for monthly averages
+   - `=EURIBOR_DAILY("2024/12/27")` or `=EURIBOR_DAILY(DATE(2024,12,27))` for daily rates (plain text format)
+   - `=EURIBOR_MONTHLY("2024/12")` or `=EURIBOR_MONTHLY(DATE(2024,12,1))` for monthly averages (plain text format)
+   - `=EURIBOR_JSON_DAILY("2024/12", 27)` for daily rates from the JSON API
+   - `=EURIBOR_JSON_MONTHLY(2024, 12)` for monthly averages from the JSON API
 
 ## License
 

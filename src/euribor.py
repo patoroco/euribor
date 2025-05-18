@@ -275,88 +275,51 @@ def generate_yearly_json(year, month, value):
     elif should_update_date:
         print(f'Updated value for {year}-{month} in {json_file}')
 
-def generate_monthly_json(year, month, daily_data):
+def generate_monthly_json(year: str, month: str, daily_data: dict) -> None:
     """
-    Generate or update JSON file with daily Euribor rates for a specific month.
-    
-    Args:
-        year (str): The year
-        month (str): The month (01-12)
-        daily_data (dict): Dictionary with daily Euribor rates (day -> value)
+    Generate or update a JSON file with all daily data for a specific month.
+    The JSON structure contains daily rates with value and metadata.
     """
-    # Create directory structure
-    month_dir = os.path.join("api", year, month)
-    os.makedirs(month_dir, exist_ok=True)
+    # Create directory if not exists
+    os.makedirs(os.path.join("api", year, month), exist_ok=True)
     
-    # JSON file path
-    json_file = os.path.join(month_dir, "index.json")
+    # Define the output file
+    output_file = os.path.join("api", year, month, "index.json")
     
-    # Initialize data structure
-    data = {}
-    
-    # Read existing file if it exists
-    if os.path.exists(json_file):
+    # Prepare new data
+    current_data = {}
+    if os.path.exists(output_file):
         try:
-            with open(json_file, 'r') as f:
-                data = json.load(f)
+            with open(output_file, "r") as f:
+                current_data = json.load(f)
         except json.JSONDecodeError:
-            # If file exists but is not valid JSON, initialize as empty
-            data = {}
+            current_data = {}
+    
+    updated = False
+    now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     
     # Update data for each day
-    days_added = 0
-    days_updated = 0
-    
     for day, value in daily_data.items():
-        # Check if we need to update the last_modified date
-        # Only update if the day doesn't exist or if the value has changed
-        should_update_date = False
-        is_new_data = False
-        
-        if day not in data:
-            should_update_date = True
-            is_new_data = True
-            days_added += 1
-        elif data[day]["value"] != str(value):
-            should_update_date = True
-            days_updated += 1
-        
-        # Current datetime in ISO format for last_modified
-        current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        
-        # If entry exists and we don't need to update the date, keep the old last_modified
-        last_modified = current_datetime
-        if day in data and not should_update_date and "_meta" in data[day] and "last_modified" in data[day]["_meta"]:
-            last_modified = data[day]["_meta"]["last_modified"]
-        
-        # Update data for this day
-        data[day] = {
-            "value": str(value),
-            "_meta": {
-                "full_date": f"{year}-{month}-{day}",
-                "last_modified": last_modified
+        if day not in current_data or current_data[day]["value"] != str(value):
+            updated = True
+            current_data[day] = {
+                "value": str(value),
+                "_meta": {
+                    "full_date": f"{year}-{month}-{day}",
+                    "last_modified": now_str
+                }
             }
-        }
     
-    # Sort the data by day number before writing to file
-    # Create a new ordered dictionary
-    ordered_data = {}
-    
-    # Get all days and sort them numerically
-    days = sorted(data.keys(), key=int)
-    
-    # Add each day to the ordered dictionary
-    for day in days:
-        ordered_data[day] = data[day]
-    
-    # Write ordered data to JSON file
-    with open(json_file, 'w') as f:
-        json.dump(ordered_data, f, indent=2)
-    
-    # Only print message if the data was actually updated or added
-    if days_added > 0 or days_updated > 0:
-        action = "Created" if not os.path.exists(json_file) else "Updated"
-        print(f'{action} daily JSON data for {year}-{month} ({days_added} days added, {days_updated} days updated)')
+    # Write the updated data if needed
+    if updated:
+        # Sort the days numerically
+        ordered_data = {k: current_data[k] for k in sorted(current_data.keys(), key=int)}
+        
+        with open(output_file, "w") as f:
+            json.dump(ordered_data, f, indent=2)
+            
+        # Print a message only if we've actually updated something
+        print(f"Updated daily JSON data for {year}/{month}")
 
 def send_request_per_day(year=2025, month=4):
     """

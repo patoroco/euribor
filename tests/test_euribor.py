@@ -11,7 +11,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the modules to test
 import src.date_utils as date_utils
-from src.euribor import send_request_per_day, send_request_per_month, generate_yearly_json, generate_all_yearly_json
+from src.euribor import (
+    send_request_per_day, 
+    send_request_per_month, 
+    generate_yearly_json, 
+    generate_monthly_json,
+    generate_all_yearly_json,
+    generate_all_monthly_json
+)
 
 # Sample test data
 SAMPLE_API_RESPONSE = [
@@ -272,6 +279,124 @@ class TestEuriborFileOperations:
             # Restore original directory
             os.chdir(original_dir)
 
+    def test_monthly_json_generation(self, temp_dir):
+        """Test JSON file generation with daily data for a month"""
+        # Change to the temp directory for file operations
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+        try:
+            # Create test directories
+            os.makedirs(os.path.join('api', '2021', '01'), exist_ok=True)
+            
+            # Create test daily data
+            daily_data = {
+                "01": 3.456,
+                "15": 3.789,
+                "31": 3.567
+            }
+            
+            # Mock datetime.now() properly to return our fixed datetime
+            fixed_datetime = datetime(2021, 12, 31, 12, 0, 0)
+            datetime_mock = mock.Mock(wraps=datetime)
+            datetime_mock.now.return_value = fixed_datetime
+            
+            # Patch the datetime class in the module being tested
+            with mock.patch('src.euribor.datetime', datetime_mock):
+                # Test generating a monthly JSON file
+                generate_monthly_json('2021', '01', daily_data)
+                
+                # Verify the JSON file was created with the right content
+                json_file = os.path.join('api', '2021', '01', 'index.json')
+                assert os.path.exists(json_file)
+                
+                with open(json_file, 'r') as f:
+                    data = json.load(f)
+                    # Check that all days are present
+                    assert '01' in data
+                    assert '15' in data
+                    assert '31' in data
+                    
+                    # Check the values
+                    assert data['01']['value'] == '3.456'
+                    assert data['15']['value'] == '3.789'
+                    assert data['31']['value'] == '3.567'
+                    
+                    # Check metadata
+                    assert data['01']['_meta']['full_date'] == '2021-01-01'
+                    assert data['01']['_meta']['last_modified'] == '2021-12-31T12:00:00'
+                    
+                    # Check order of days (should be sorted numerically)
+                    days = list(data.keys())
+                    assert days == sorted(days, key=int)
+                
+                # Test updating with a changed value
+                daily_data['15'] = 3.999
+                datetime_mock.now.return_value = datetime(2022, 1, 1, 12, 0, 0)
+                generate_monthly_json('2021', '01', daily_data)
+                
+                with open(json_file, 'r') as f:
+                    data = json.load(f)
+                    assert data['15']['value'] == '3.999'
+                    assert data['15']['_meta']['last_modified'] == '2022-01-01T12:00:00'
+                    # Other dates should remain unchanged
+                    assert data['01']['_meta']['last_modified'] == '2021-12-31T12:00:00'
+        finally:
+            # Restore original directory
+            os.chdir(original_dir)
+    
+    def test_generate_all_monthly_json(self, temp_dir):
+        """Test generating all monthly JSON files from daily data"""
+        # Change to the temp directory for file operations
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+        try:
+            # Create test daily data
+            os.makedirs(os.path.join('api', 'daily', '2021', '01'), exist_ok=True)
+            os.makedirs(os.path.join('api', 'daily', '2021', '02'), exist_ok=True)
+            os.makedirs(os.path.join('api', '2021', '01'), exist_ok=True)
+            os.makedirs(os.path.join('api', '2021', '02'), exist_ok=True)
+            
+            # Create sample daily data files
+            with open(os.path.join('api', 'daily', '2021', '01', '01'), 'w') as f:
+                f.write('3.456')
+            with open(os.path.join('api', 'daily', '2021', '01', '15'), 'w') as f:
+                f.write('3.789')
+            with open(os.path.join('api', 'daily', '2021', '02', '01'), 'w') as f:
+                f.write('3.567')
+            
+            # Mock datetime.now() properly to return our fixed datetime
+            fixed_datetime = datetime(2021, 12, 31, 12, 0, 0)
+            datetime_mock = mock.Mock(wraps=datetime)
+            datetime_mock.now.return_value = fixed_datetime
+            
+            # Patch the datetime class in the module being tested
+            with mock.patch('src.euribor.datetime', datetime_mock):
+                # Test generating all monthly JSON files
+                generate_all_monthly_json()
+                
+                # Verify the JSON file for January was created with the right content
+                jan_json_file = os.path.join('api', '2021', '01', 'index.json')
+                assert os.path.exists(jan_json_file)
+                
+                with open(jan_json_file, 'r') as f:
+                    data = json.load(f)
+                    assert '01' in data
+                    assert '15' in data
+                    assert data['01']['value'] == '3.456'
+                    assert data['15']['value'] == '3.789'
+                
+                # Verify the JSON file for February was created with the right content
+                feb_json_file = os.path.join('api', '2021', '02', 'index.json')
+                assert os.path.exists(feb_json_file)
+                
+                with open(feb_json_file, 'r') as f:
+                    data = json.load(f)
+                    assert '01' in data
+                    assert data['01']['value'] == '3.567'
+        finally:
+            # Restore original directory
+            os.chdir(original_dir)
+
 
 class TestEuriborIntegration:
     """Integration tests for the entire workflow"""
@@ -296,6 +421,7 @@ class TestEuriborIntegration:
                                         send_request_per_day(2021, 1)
                                         send_request_per_month(2021)
                                         generate_all_yearly_json()
+                                        generate_all_monthly_json()
 
 
 if __name__ == "__main__":
