@@ -58,6 +58,8 @@ Example response:
 
 > **Note**: GitHub Pages automatically serves `index.json` files when accessing a directory URL, making it unnecessary to include `index.json` in the URL path.
 
+> **Important**: The JSON includes entries for all days of the month. Days without data (weekends, holidays) have a `null` value while days with data have the actual rate as a string.
+
 Example response:
 
 ```json
@@ -74,6 +76,13 @@ Example response:
     "_meta": {
       "full_date": "2024-12-02",
       "last_modified": "2024-12-02T10:00:00"
+    }
+  },
+  "03": {
+    "value": null,
+    "_meta": {
+      "full_date": "2024-12-03",
+      "last_modified": "2024-12-03T10:00:00"
     }
   }
   // ... other days

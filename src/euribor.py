@@ -6,6 +6,7 @@ from datetime import datetime
 import requests
 import os
 import json
+import calendar
 
 from src.date_utils import (
     date_to_timestamp,
@@ -279,6 +280,7 @@ def generate_monthly_json(year: str, month: str, daily_data: dict) -> None:
     """
     Generate or update a JSON file with all daily data for a specific month.
     The JSON structure contains daily rates with value and metadata.
+    Days without data (weekends, holidays) are included with a null value.
     """
     # Create directory if not exists
     os.makedirs(os.path.join("api", year, month), exist_ok=True)
@@ -298,17 +300,42 @@ def generate_monthly_json(year: str, month: str, daily_data: dict) -> None:
     updated = False
     now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     
-    # Update data for each day
-    for day, value in daily_data.items():
-        if day not in current_data or current_data[day]["value"] != str(value):
-            updated = True
-            current_data[day] = {
-                "value": str(value),
-                "_meta": {
-                    "full_date": f"{year}-{month}-{day}",
-                    "last_modified": now_str
+    # Determine the number of days in this month
+    year_int = int(year)
+    month_int = int(month)
+    _, num_days = calendar.monthrange(year_int, month_int)
+    
+    # Process all days in the month
+    for day_int in range(1, num_days + 1):
+        day = f"{day_int:02d}"  # Format day as "01", "02", etc.
+        
+        # If we have data for this day, use it
+        if day in daily_data:
+            value = daily_data[day]
+            value_str = str(value)
+            
+            # Only update if the value is different or the day doesn't exist yet
+            if day not in current_data or current_data[day]["value"] != value_str:
+                updated = True
+                current_data[day] = {
+                    "value": value_str,
+                    "_meta": {
+                        "full_date": f"{year}-{month}-{day}",
+                        "last_modified": now_str
+                    }
                 }
-            }
+        else:
+            # For days without data, add them with null value if they don't exist
+            # or if they exist but have a non-null value
+            if day not in current_data or current_data[day]["value"] is not None:
+                updated = True
+                current_data[day] = {
+                    "value": None,
+                    "_meta": {
+                        "full_date": f"{year}-{month}-{day}",
+                        "last_modified": now_str
+                    }
+                }
     
     # Write the updated data if needed
     if updated:

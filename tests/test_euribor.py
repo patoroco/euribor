@@ -288,7 +288,7 @@ class TestEuriborFileOperations:
             # Create test directories
             os.makedirs(os.path.join('api', '2021', '01'), exist_ok=True)
             
-            # Create test daily data
+            # Create test daily data - only include some days to test null values
             daily_data = {
                 "01": 3.456,
                 "15": 3.789,
@@ -311,15 +311,19 @@ class TestEuriborFileOperations:
                 
                 with open(json_file, 'r') as f:
                     data = json.load(f)
-                    # Check that all days are present
-                    assert '01' in data
-                    assert '15' in data
-                    assert '31' in data
                     
-                    # Check the values
+                    # Check that all days of the month are present
+                    assert len(data) == 31  # January has 31 days
+                    
+                    # Check that specific days with data have correct values
                     assert data['01']['value'] == '3.456'
                     assert data['15']['value'] == '3.789'
                     assert data['31']['value'] == '3.567'
+                    
+                    # Check that days without data have null values
+                    assert data['02']['value'] is None
+                    assert data['10']['value'] is None
+                    assert data['20']['value'] is None
                     
                     # Check metadata
                     assert data['01']['_meta']['full_date'] == '2021-01-01'
@@ -340,6 +344,8 @@ class TestEuriborFileOperations:
                     assert data['15']['_meta']['last_modified'] == '2022-01-01T12:00:00'
                     # Other dates should remain unchanged
                     assert data['01']['_meta']['last_modified'] == '2021-12-31T12:00:00'
+                    # Null values should still be null
+                    assert data['02']['value'] is None
         finally:
             # Restore original directory
             os.chdir(original_dir)
