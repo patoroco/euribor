@@ -6,27 +6,11 @@ This project provides a simple API to access EURIBOR rates data. The data is aut
 
 > **Note about GitHub Pages**: This API is hosted on GitHub Pages, which automatically serves `index.json` files when a directory URL is accessed. This means you can omit `index.json` from all JSON endpoint URLs.
 
-### Daily Rates
-
-- Format: `https://patoroco.github.io/euribor/api/daily/{YYYY}/{MM}/{DD}`
-- Example: `https://patoroco.github.io/euribor/api/daily/2024/12/27`
-- Returns: The EURIBOR rate for the specified date
-
-### Monthly Averages
-
-- Format: `https://patoroco.github.io/euribor/api/monthly/{YYYY}/{MM}`
-- Example: `https://patoroco.github.io/euribor/api/monthly/2024/12`
-- Returns: The average EURIBOR rate for the specified month
-
-### JSON Data Format
-
-#### Yearly JSON with Monthly Averages
+### Yearly JSON with Monthly Averages
 
 - Format: `https://patoroco.github.io/euribor/api/{YYYY}`
 - Example: `https://patoroco.github.io/euribor/api/2024`
 - Returns: JSON object with monthly average EURIBOR rates for the specified year
-
-> **Note**: GitHub Pages automatically serves `index.json` files when accessing a directory URL, so you don't need to include `index.json` in the URL path.
 
 Example response:
 
@@ -50,13 +34,11 @@ Example response:
 }
 ```
 
-#### Monthly JSON with Daily Rates
+### Monthly JSON with Daily Rates
 
 - Format: `https://patoroco.github.io/euribor/api/{YYYY}/{MM}`
 - Example: `https://patoroco.github.io/euribor/api/2024/12`
 - Returns: JSON object with daily EURIBOR rates for the specified month
-
-> **Note**: GitHub Pages automatically serves `index.json` files when accessing a directory URL, making it unnecessary to include `index.json` in the URL path.
 
 > **Important**: The JSON includes entries for all days of the month. Days without data (weekends, holidays) have a `null` value while days with data have the actual rate as a string.
 
@@ -98,10 +80,9 @@ The data is collected from [euribor-rates.eu](https://www.euribor-rates.eu/) and
 The data is updated daily at 10:00 UTC using a GitHub Action workflow. The workflow:
 
 1. Fetches the latest EURIBOR rates from euribor-rates.eu
-2. Updates daily rate files in the `/api/daily/{YYYY}/{MM}/{DD}` directory structure
-3. Calculates and updates monthly averages in the `/api/monthly/{YYYY}/{MM}` directory structure
-4. Generates and updates JSON files for both yearly and monthly data
-5. Commits and pushes changes to the repository
+2. Calculates monthly averages based on daily rates
+3. Generates and updates JSON files for both yearly (with monthly data) and monthly (with daily data)
+4. Commits and pushes changes to the repository
 
 On the first run, the workflow will also populate historical data starting from 1999.
 
@@ -109,24 +90,6 @@ On the first run, the workflow will also populate historical data starting from 
 
 ```
 api/
-├── daily/
-│   ├── 2024/
-│   │   ├── 01/
-│   │   │   ├── 01  # Rate for January 1, 2024
-│   │   │   ├── 02  # Rate for January 2, 2024
-│   │   │   └── ...
-│   │   ├── 02/
-│   │   │   └── ...
-│   │   └── ...
-│   └── 2025/
-│       └── ...
-├── monthly/
-│   ├── 2024/
-│   │   ├── 01  # Average rate for January 2024
-│   │   ├── 02  # Average rate for February 2024
-│   │   └── ...
-│   └── 2025/
-│       └── ...
 ├── 2024/
 │   ├── index.json  # JSON with all monthly averages for 2024 (accessible via /api/2024/)
 │   ├── 01/
@@ -172,6 +135,42 @@ This project uses UV, an ultra-fast Python package manager, for dependency manag
    python -m pytest
    ```
 
+### Running the Script
+
+The script can be run with various options to control which years and months to process:
+
+```bash
+# Process current month (and previous month if in first week)
+python -m src.euribor
+
+# Process a specific year
+python -m src.euribor --year 2024
+
+# Process a specific month of the current year
+python -m src.euribor --month 5
+
+# Process a specific year and month
+python -m src.euribor --year 2024 --month 5
+
+# Process all historical years (1999 to current)
+python -m src.euribor --all
+```
+
+Command line options:
+
+- `--year YEAR`: Process only the specified year
+- `--month MONTH`: Process only the specified month
+- `--all`: Process all years from 1999 to current
+- No arguments: Process the current month (and previous month if in first week of the month, or previous year's December if in January)
+
+Processing only the current month significantly speeds up execution, especially for automation via GitHub Actions.
+
+#### Smart defaults for automation:
+
+- If running in January, it also processes December of the previous year
+- If running in the first week of a month, it also processes the previous month
+- This ensures that any late updates to the previous period are captured
+
 For more information on UV, visit the [UV official website](https://astral.sh/uv).
 
 ## Google Sheets Integration
@@ -179,89 +178,6 @@ For more information on UV, visit the [UV official website](https://astral.sh/uv
 You can easily integrate this API with Google Sheets using custom functions. Here's an example of the functions:
 
 ```javascript
-/**
- * Formats a date for the Euribor API
- *
- * @param {string|Date} date - Date to format
- * @param {boolean} isMonthly - Whether this is for monthly data (true) or daily data (false)
- * @return {string} Formatted date path for the API
- */
-function formatDateForAPI(date, isMonthly) {
-  let year, month, day;
-
-  if (typeof date === "string") {
-    // If already a string, split by common separators
-    const parts = date.split(/[-/\.]/);
-    if (parts.length >= 2) {
-      year = parts[0];
-      month = parts[1].padStart(2, "0");
-      day = parts.length > 2 ? parts[2].padStart(2, "0") : "";
-    } else {
-      return date; // Return as is if format can't be determined
-    }
-  } else if (date instanceof Date) {
-    // If it's a Date object, format it
-    year = date.getFullYear();
-    month = (date.getMonth() + 1).toString().padStart(2, "0");
-    day = date.getDate().toString().padStart(2, "0");
-  } else {
-    return date.toString(); // Return string representation for unknown types
-  }
-
-  // Return path formatted for API: YYYY/MM/DD for daily or YYYY/MM for monthly
-  return isMonthly ? `${year}/${month}` : `${year}/${month}/${day}`;
-}
-
-/**
- * Fetches Euribor data from the API
- *
- * @param {string} type - The type of data to fetch: "daily" or "monthly"
- * @param {string|Date} date - Date to fetch rate for
- * @return {string} The Euribor rate or error message
- */
-function EURIBOR(type, date) {
-  if (date === undefined) {
-    return "UNDEFINED";
-  }
-
-  const isMonthly = type === "monthly";
-  const formattedDate = formatDateForAPI(date, isMonthly);
-  const url = `https://patoroco.github.io/euribor/api/${type}/${formattedDate}`;
-
-  try {
-    const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
-    const statusCode = response.getResponseCode();
-
-    if (statusCode !== 200) {
-      return "NODATA";
-    }
-
-    return response.getContentText();
-  } catch (error) {
-    return "ERROR";
-  }
-}
-
-/**
- * Fetches daily Euribor rate for a specific date
- *
- * @param {string|Date} date - Date to fetch rate for (YYYY-MM-DD, YYYY/MM/DD, or Date object)
- * @return {string} The daily Euribor rate
- */
-function EURIBOR_DAILY(date) {
-  return EURIBOR("daily", date);
-}
-
-/**
- * Fetches monthly average Euribor rate
- *
- * @param {string|Date} yearMonth - Year and month to fetch average for (YYYY-MM, YYYY/MM, or Date object)
- * @return {string} The monthly average Euribor rate
- */
-function EURIBOR_MONTHLY(yearMonth) {
-  return EURIBOR("monthly", yearMonth);
-}
-
 /**
  * Fetches Euribor data from the JSON API
  *
@@ -371,12 +287,10 @@ function EURIBOR_JSON_MONTHLY(year, month) {
 3. Paste the code above
 4. Save and close the script editor
 5. In your sheet, you can now use:
-   - `=EURIBOR_DAILY("2024/12/27")` or `=EURIBOR_DAILY(DATE(2024,12,27))` for daily rates (plain text format)
-   - `=EURIBOR_MONTHLY("2024/12")` or `=EURIBOR_MONTHLY(DATE(2024,12,1))` for monthly averages (plain text format)
-   - `=EURIBOR_JSON_DAILY("2024/12", 27)` for daily rates from the JSON API (uses directory URLs)
-   - `=EURIBOR_JSON_MONTHLY(2024, 12)` for monthly averages from the JSON API (uses directory URLs)
+   - `=EURIBOR_JSON_DAILY("2024/12", 27)` for daily rates from the JSON API
+   - `=EURIBOR_JSON_MONTHLY(2024, 12)` for monthly averages from the JSON API
 
-> **Note**: The JSON functions (`EURIBOR_JSON_DAILY` and `EURIBOR_JSON_MONTHLY`) use GitHub Pages' automatic index.json serving feature, making the URLs simpler and more intuitive.
+> **Note**: The JSON functions use GitHub Pages' automatic index.json serving feature, making the URLs simpler and more intuitive.
 
 ## License
 
