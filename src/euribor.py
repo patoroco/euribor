@@ -73,6 +73,9 @@ def process_daily_data(year, month):
     # Calculate date range
     min_date = f"{year_str}-{month_str}-01"
     
+    # Get current date
+    now = datetime.now()
+    
     # Calculate next month for end date
     if int(month_str) == 12:
         next_month = 1
@@ -81,7 +84,12 @@ def process_daily_data(year, month):
         next_month = int(month_str) + 1
         next_year = int(year_str)
 
+    # Default max date is the first day of next month
     max_date = f"{next_year}-{next_month:02d}-01"
+    
+    # If the month being processed is the current month, limit the end date to today
+    if int(year_str) == now.year and int(month_str) == now.month:
+        max_date = now.strftime("%Y-%m-%d")
     
     # Fetch data
     data = fetch_euribor_data(min_date, max_date)
@@ -246,6 +254,7 @@ def generate_monthly_json(year: str, month: str, daily_data: dict) -> None:
     Generate or update a JSON file with all daily data for a specific month.
     The JSON structure contains daily rates with value and metadata.
     Days without data (weekends, holidays) are included with a null value.
+    Days in the future (after current date) are not included.
     """
     # Create directory if not exists
     os.makedirs(os.path.join("api", year, month), exist_ok=True)
@@ -263,7 +272,13 @@ def generate_monthly_json(year: str, month: str, daily_data: dict) -> None:
             current_data = {}
     
     updated = False
-    now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    now = datetime.now()
+    now_str = now.strftime("%Y-%m-%dT%H:%M:%S")
+    
+    # Get current date for comparison with future dates
+    current_year = now.year
+    current_month = now.month
+    current_day = now.day
     
     # Determine the number of days in this month
     year_int = int(year)
@@ -272,6 +287,17 @@ def generate_monthly_json(year: str, month: str, daily_data: dict) -> None:
     
     # Process all days in the month
     for day_int in range(1, num_days + 1):
+        # Skip future dates
+        if (year_int > current_year or 
+            (year_int == current_year and month_int > current_month) or
+            (year_int == current_year and month_int == current_month and day_int > current_day)):
+            # Remove future dates if they exist in the current data
+            day = f"{day_int:02d}"
+            if day in current_data:
+                updated = True
+                current_data.pop(day)
+            continue
+            
         day = f"{day_int:02d}"  # Format day as "01", "02", etc.
         
         # If we have data for this day, use it

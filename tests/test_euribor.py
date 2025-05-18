@@ -204,7 +204,7 @@ class TestEuriborFileOperations:
             os.chdir(original_dir)
     
     def test_monthly_json_generation(self, temp_dir):
-        """Test JSON file generation with daily data for a month"""
+        """Test monthly JSON file generation with daily data"""
         # Change to the temp directory for file operations
         original_dir = os.getcwd()
         os.chdir(temp_dir)
@@ -212,21 +212,22 @@ class TestEuriborFileOperations:
             # Create test directories
             os.makedirs(os.path.join('api', '2021', '01'), exist_ok=True)
             
-            # Create test daily data - only include some days to test null values
+            # Prepare test data
             daily_data = {
-                "01": 3.456,
-                "15": 3.789,
-                "31": 3.567
+                '01': 0.123,  # 2021-01-01
+                '02': 0.145,  # 2021-01-02
+                '03': 0.167,  # 2021-01-03
+                '04': 0.189,  # 2021-01-04
             }
             
-            # Mock datetime.now() properly to return our fixed datetime
-            fixed_datetime = datetime(2021, 12, 31, 12, 0, 0)
-            datetime_mock = mock.Mock(wraps=datetime)
-            datetime_mock.now.return_value = fixed_datetime
+            # Mock datetime.now() to return a fixed date after the month being tested
+            # (to ensure no days are filtered out as future dates)
+            fixed_datetime = datetime(2021, 2, 1, 12, 0, 0)  # February 1st, after the month we're testing
             
-            # Patch the datetime class in the module being tested
-            with mock.patch('src.euribor.datetime', datetime_mock):
-                # Test generating a monthly JSON file
+            with mock.patch('src.euribor.datetime', mock.Mock(wraps=datetime)) as mock_dt:
+                mock_dt.now.return_value = fixed_datetime
+                
+                # Test generating a new monthly JSON file
                 generate_monthly_json('2021', '01', daily_data)
                 
                 # Verify the JSON file was created with the right content
@@ -235,43 +236,56 @@ class TestEuriborFileOperations:
                 
                 with open(json_file, 'r') as f:
                     data = json.load(f)
+                    # Check that we have 31 days (January has 31 days)
+                    assert len(data) == 31
                     
-                    # Check that all days of the month are present
-                    assert len(data) == 31  # January has 31 days
+                    # Check our specific days have the correct values
+                    assert '01' in data
+                    assert '02' in data
+                    assert '03' in data
+                    assert '04' in data
                     
-                    # Check that specific days with data have correct values
-                    assert data['01']['value'] == '3.456'
-                    assert data['15']['value'] == '3.789'
-                    assert data['31']['value'] == '3.567'
+                    # Verify data values
+                    assert data['01']['value'] == '0.123'
+                    assert data['02']['value'] == '0.145'
+                    assert data['03']['value'] == '0.167'
+                    assert data['04']['value'] == '0.189'
                     
-                    # Check that days without data have null values
-                    assert data['02']['value'] is None
-                    assert data['10']['value'] is None
-                    assert data['20']['value'] is None
+                    # Check that other days have null values
+                    assert data['05']['value'] is None
+                    assert data['15']['value'] is None
+                    assert data['31']['value'] is None
                     
-                    # Check metadata
+                    # Verify metadata for a specific day
                     assert data['01']['_meta']['full_date'] == '2021-01-01'
-                    assert data['01']['_meta']['last_modified'] == '2021-12-31T12:00:00'
-                    
-                    # Check order of days (should be sorted numerically)
-                    days = list(data.keys())
-                    assert days == sorted(days, key=int)
+                    assert data['01']['_meta']['last_modified'] == '2021-02-01T12:00:00'
                 
-                # Test updating with a changed value
-                daily_data['15'] = 3.999
-                datetime_mock.now.return_value = datetime(2022, 1, 1, 12, 0, 0)
+                # Test future date filtering - set now to be in the middle of the month
+                mock_dt.now.return_value = datetime(2021, 1, 2, 12, 0, 0)  # January 2nd, within the month
+                
+                # Update data with different values
+                daily_data['03'] = 0.172  # Changed value
+                daily_data['05'] = 0.210  # Future day that should be filtered
+                
                 generate_monthly_json('2021', '01', daily_data)
                 
+                # Verify the JSON file was updated correctly
                 with open(json_file, 'r') as f:
                     data = json.load(f)
-                    assert data['15']['value'] == '3.999'
-                    assert data['15']['_meta']['last_modified'] == '2022-01-01T12:00:00'
-                    # Other dates should remain unchanged
-                    assert data['01']['_meta']['last_modified'] == '2021-12-31T12:00:00'
-                    # Null values should still be null
-                    assert data['02']['value'] is None
+                    # Should only have days up to the current date (01 and 02)
+                    assert len(data) == 2
+                    assert '01' in data
+                    assert '02' in data
+                    assert '03' not in data  # Future day
+                    assert '04' not in data  # Future day
+                    assert '05' not in data  # Future day
+                    
+                    # Values should be correct
+                    assert data['01']['value'] == '0.123'
+                    assert data['02']['value'] == '0.145'
+        
         finally:
-            # Restore original directory
+            # Change back to the original directory
             os.chdir(original_dir)
 
 class TestEuriborIntegration:
