@@ -78,11 +78,8 @@ def temp_dir(tmp_path):
     """Create a temporary directory for testing file operations"""
     # Create the api directory structure with nested folders
     (tmp_path / "api").mkdir()
-    (tmp_path / "api" / "daily").mkdir()
-    (tmp_path / "api" / "monthly").mkdir()
-    (tmp_path / "api" / "daily" / "2021").mkdir()
-    (tmp_path / "api" / "daily" / "2021" / "01").mkdir()
-    (tmp_path / "api" / "monthly" / "2021").mkdir()
+    (tmp_path / "api" / "2021").mkdir()
+    (tmp_path / "api" / "2021" / "01").mkdir()
     
     # Return the temporary path
     return tmp_path
@@ -112,77 +109,47 @@ class TestEuriborFileOperations:
     @mock.patch('os.makedirs')
     def test_directory_creation(self, mock_makedirs, mock_requests_get):
         """Test that directories are created if they don't exist"""
-        # Test for directory creation in send_request_per_day
-        with mock.patch('builtins.open', mock.mock_open()) as mock_file:
+        # Test for directory creation in send_request_per_day (creates monthly JSON dirs)
+        with mock.patch('builtins.open', mock.mock_open()), \
+             mock.patch('json.load', return_value={}), \
+             mock.patch('json.dump'):
             send_request_per_day(2021, 1)
-            # Check that proper nested directory is created
-            mock_makedirs.assert_any_call(os.path.join('api', 'daily', '2021', '01'), exist_ok=True)
+            # Check that year/month directory for JSON is created
+            mock_makedirs.assert_any_call(os.path.join('api', '2021', '01'), exist_ok=True)
         
-        # Test for directory creation in send_request_per_month
-        with mock.patch('builtins.open', mock.mock_open()) as mock_file:
+        # Test for directory creation for yearly JSON
+        with mock.patch('builtins.open', mock.mock_open()), \
+             mock.patch('json.load', return_value={}), \
+             mock.patch('json.dump'):
             send_request_per_month(2021)
-            # Check that proper nested directory is created
-            mock_makedirs.assert_any_call(os.path.join('api', 'monthly', '2021'), exist_ok=True)
+            # Check that year directory is created
+            mock_makedirs.assert_any_call(os.path.join('api', '2021'), exist_ok=True)
 
-    def test_file_writing_per_day(self, temp_dir, mock_requests_get):
-        """Test file writing in send_request_per_day function"""
-        # Change to the temp directory for file operations
-        original_dir = os.getcwd()
-        os.chdir(temp_dir)
-        try:
-            # Mock the file writing
-            with mock.patch('builtins.open', mock.mock_open()) as mock_file:
-                send_request_per_day(2021, 1)
-                
-                # Check if the file was opened for writing
-                mock_file.assert_called()
-                
-                # Verify at least one call was to the correct path format
-                call_args_list = mock_file.call_args_list
-                
-                # Check that at least one path has the correct format
-                path_format_found = False
-                for call in call_args_list:
-                    path = call[0][0]
-                    # The path should be something like api/daily/2021/01/01
-                    if path.startswith(os.path.join('api', 'daily', '2021', '01')):
-                        path_format_found = True
-                        break
-                        
-                assert path_format_found, "No file path with the expected format was used"
-        finally:
-            # Restore original directory
-            os.chdir(original_dir)
+    def test_process_daily_data(self, mock_requests_get):
+        """Test processing daily data from API response"""
+        with mock.patch('src.euribor.generate_monthly_json') as mock_generate_json:
+            result = send_request_per_day(2021, 1)
+            
+            # Check the result structure
+            assert "days_processed" in result
+            assert "daily_data" in result
+            assert result["days_processed"] > 0
+            
+            # Check that the generate_monthly_json function was called
+            mock_generate_json.assert_called()
 
-    def test_file_writing_per_month(self, temp_dir, mock_requests_get):
-        """Test file writing in send_request_per_month function"""
-        # Change to the temp directory for file operations
-        original_dir = os.getcwd()
-        os.chdir(temp_dir)
-        try:
-            # Mock the file writing
-            with mock.patch('builtins.open', mock.mock_open()) as mock_file:
-                send_request_per_month(2021)
-                
-                # Check if the file was opened for writing
-                mock_file.assert_called()
-                
-                # Verify at least one call was to the correct path format
-                call_args_list = mock_file.call_args_list
-                
-                # Check that at least one path has the correct format
-                path_format_found = False
-                for call in call_args_list:
-                    path = call[0][0]
-                    # The path should be something like api/monthly/2021/01
-                    if path.startswith(os.path.join('api', 'monthly', '2021')):
-                        path_format_found = True
-                        break
-                        
-                assert path_format_found, "No file path with the expected format was used"
-        finally:
-            # Restore original directory
-            os.chdir(original_dir)
+    def test_process_monthly_data(self, mock_requests_get):
+        """Test processing monthly data from API response"""
+        with mock.patch('src.euribor.generate_yearly_json') as mock_generate_json:
+            result = send_request_per_month(2021)
+            
+            # Check the result structure
+            assert "months_processed" in result
+            assert "monthly_averages" in result
+            assert result["months_processed"] > 0
+            
+            # Check that the generate_yearly_json function was called
+            mock_generate_json.assert_called()
     
     def test_json_generation(self, temp_dir):
         """Test JSON file generation with metadata"""
@@ -235,50 +202,6 @@ class TestEuriborFileOperations:
             # Restore original directory
             os.chdir(original_dir)
     
-    def test_generate_all_yearly_json(self, temp_dir):
-        """Test generating all yearly JSON files from monthly data"""
-        # Change to the temp directory for file operations
-        original_dir = os.getcwd()
-        os.chdir(temp_dir)
-        try:
-            # Create test monthly data
-            os.makedirs(os.path.join('api', 'monthly', '2021'), exist_ok=True)
-            os.makedirs(os.path.join('api', '2021'), exist_ok=True)
-            
-            # Create sample monthly data files
-            with open(os.path.join('api', 'monthly', '2021', '01'), 'w') as f:
-                f.write('3.456')
-            with open(os.path.join('api', 'monthly', '2021', '02'), 'w') as f:
-                f.write('3.789')
-            
-            # Mock datetime.now() properly to return our fixed datetime
-            fixed_datetime = datetime(2021, 12, 31, 12, 0, 0)
-            datetime_mock = mock.Mock(wraps=datetime)
-            datetime_mock.now.return_value = fixed_datetime
-            
-            # Patch the datetime class in the module being tested
-            with mock.patch('src.euribor.datetime', datetime_mock):
-                # Test generating all JSON files
-                generate_all_yearly_json()
-                
-                # Verify the JSON file was created with the right content
-                json_file = os.path.join('api', '2021', 'index.json')
-                assert os.path.exists(json_file)
-                
-                with open(json_file, 'r') as f:
-                    data = json.load(f)
-                    assert '01' in data
-                    assert '02' in data
-                    assert data['01']['value'] == '3.456'
-                    assert data['02']['value'] == '3.789'
-                    assert data['01']['_meta']['full_date'] == '2021-01'
-                    assert data['02']['_meta']['full_date'] == '2021-02'
-                    assert data['01']['_meta']['last_modified'] == '2021-12-31T12:00:00'
-                    assert data['02']['_meta']['last_modified'] == '2021-12-31T12:00:00'
-        finally:
-            # Restore original directory
-            os.chdir(original_dir)
-
     def test_monthly_json_generation(self, temp_dir):
         """Test JSON file generation with daily data for a month"""
         # Change to the temp directory for file operations
@@ -349,60 +272,6 @@ class TestEuriborFileOperations:
         finally:
             # Restore original directory
             os.chdir(original_dir)
-    
-    def test_generate_all_monthly_json(self, temp_dir):
-        """Test generating all monthly JSON files from daily data"""
-        # Change to the temp directory for file operations
-        original_dir = os.getcwd()
-        os.chdir(temp_dir)
-        try:
-            # Create test daily data
-            os.makedirs(os.path.join('api', 'daily', '2021', '01'), exist_ok=True)
-            os.makedirs(os.path.join('api', 'daily', '2021', '02'), exist_ok=True)
-            os.makedirs(os.path.join('api', '2021', '01'), exist_ok=True)
-            os.makedirs(os.path.join('api', '2021', '02'), exist_ok=True)
-            
-            # Create sample daily data files
-            with open(os.path.join('api', 'daily', '2021', '01', '01'), 'w') as f:
-                f.write('3.456')
-            with open(os.path.join('api', 'daily', '2021', '01', '15'), 'w') as f:
-                f.write('3.789')
-            with open(os.path.join('api', 'daily', '2021', '02', '01'), 'w') as f:
-                f.write('3.567')
-            
-            # Mock datetime.now() properly to return our fixed datetime
-            fixed_datetime = datetime(2021, 12, 31, 12, 0, 0)
-            datetime_mock = mock.Mock(wraps=datetime)
-            datetime_mock.now.return_value = fixed_datetime
-            
-            # Patch the datetime class in the module being tested
-            with mock.patch('src.euribor.datetime', datetime_mock):
-                # Test generating all monthly JSON files
-                generate_all_monthly_json()
-                
-                # Verify the JSON file for January was created with the right content
-                jan_json_file = os.path.join('api', '2021', '01', 'index.json')
-                assert os.path.exists(jan_json_file)
-                
-                with open(jan_json_file, 'r') as f:
-                    data = json.load(f)
-                    assert '01' in data
-                    assert '15' in data
-                    assert data['01']['value'] == '3.456'
-                    assert data['15']['value'] == '3.789'
-                
-                # Verify the JSON file for February was created with the right content
-                feb_json_file = os.path.join('api', '2021', '02', 'index.json')
-                assert os.path.exists(feb_json_file)
-                
-                with open(feb_json_file, 'r') as f:
-                    data = json.load(f)
-                    assert '01' in data
-                    assert data['01']['value'] == '3.567'
-        finally:
-            # Restore original directory
-            os.chdir(original_dir)
-
 
 class TestEuriborIntegration:
     """Integration tests for the entire workflow"""
@@ -419,15 +288,17 @@ class TestEuriborIntegration:
                 # Mock JSON load to return a proper structure
                 with mock.patch('json.load', return_value={}):
                     with mock.patch('os.path.exists', return_value=True):
-                        with mock.patch('os.listdir', return_value=['01']):
-                            with mock.patch('os.path.isdir', return_value=True):
-                                with mock.patch('os.path.isfile', return_value=True):
-                                    with mock.patch('json.dump'):
-                                        # Test if these functions run without errors
-                                        send_request_per_day(2021, 1)
-                                        send_request_per_month(2021)
-                                        generate_all_yearly_json()
-                                        generate_all_monthly_json()
+                        with mock.patch('json.dump'):
+                            # Test if these functions run without errors
+                            send_request_per_day(2021, 1)
+                            send_request_per_month(2021)
+                            
+                            # Test the JSON generation functions with mocks in place
+                            # to verify they run without errors
+                            with mock.patch('src.euribor.send_request_per_month', return_value={"months_processed": 1, "monthly_averages": {"2021-01": 1.234}}):
+                                with mock.patch('src.euribor.send_request_per_day', return_value={"days_processed": 1, "daily_data": {"2021": {"01": {"01": 1.234}}}}):
+                                    generate_all_yearly_json()
+                                    generate_all_monthly_json()
 
 
 if __name__ == "__main__":

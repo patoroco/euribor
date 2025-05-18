@@ -55,16 +55,16 @@ def fetch_euribor_data(start_date, end_date):
 
 def process_daily_data(data):
     """
-    Process and save daily Euribor rates.
+    Process daily Euribor rates and prepare data for JSON files.
     
     Args:
         data (list): JSON data from the API
         
     Returns:
-        dict: Statistics about the processing (files created/updated)
+        dict: Statistics about the processing and daily data organized by year/month
     """
     if not data:
-        return {"days_processed": 0}
+        return {"days_processed": 0, "daily_data": {}}
     
     days_processed = 0
     # Track daily data for each month to generate monthly JSON files
@@ -81,31 +81,6 @@ def process_daily_data(data):
             # Parse date components
             year, month, day = date.split('-')
             
-            # Create directory structure
-            directory = os.path.join('api', 'daily', year, month)
-            os.makedirs(directory, exist_ok=True)
-            
-            # Create file path
-            file_path = os.path.join(directory, day)
-            
-            # Check if the file exists and has the same content
-            content_changed = True
-            if os.path.exists(file_path):
-                try:
-                    with open(file_path, 'r') as f:
-                        existing_value = f.read().strip()
-                        content_changed = (existing_value != str(value))
-                except:
-                    pass
-            
-            # Write value to file
-            with open(file_path, 'w') as f:
-                f.write(str(value))
-                
-            if content_changed:
-                print(f'{"Created" if not os.path.exists(file_path) else "Updated"} daily rate for {date} ({value})')
-                days_processed += 1
-            
             # Add data to monthly_daily_data for JSON files
             if year not in monthly_daily_data:
                 monthly_daily_data[year] = {}
@@ -113,6 +88,7 @@ def process_daily_data(data):
                 monthly_daily_data[year][month] = {}
             
             monthly_daily_data[year][month][day] = value
+            days_processed += 1
     
     # Generate JSON files for each month
     for year in monthly_daily_data:
@@ -121,20 +97,20 @@ def process_daily_data(data):
             if daily_data:  # Only process if there's data
                 generate_monthly_json(year, month, daily_data)
     
-    return {"days_processed": days_processed}
+    return {"days_processed": days_processed, "daily_data": monthly_daily_data}
 
 def process_monthly_data(data):
     """
-    Process and save monthly average Euribor rates.
+    Process and calculate monthly average Euribor rates.
     
     Args:
         data (list): JSON data from the API
         
     Returns:
-        dict: Statistics about the processing (months processed)
+        dict: Statistics about the processing and monthly averages
     """
     if not data:
-        return {"months_processed": 0}
+        return {"months_processed": 0, "monthly_averages": {}}
         
     # Initialize dictionary to store monthly averages
     monthly_averages = {}
@@ -159,45 +135,22 @@ def process_monthly_data(data):
             monthly_averages[year_month].append(value)
             
     # Calculate average for each month
-    for month, values in monthly_averages.items():
+    monthly_average_values = {}
+    for month_key, values in monthly_averages.items():
         average = sum(values) / len(values)
         average = round(average, 3)
-        monthly_averages[month] = average
+        monthly_average_values[month_key] = average
+        months_processed += 1
     
-    # Process and write monthly averages
-    for month_key, average in monthly_averages.items():
+    # Process monthly averages for JSON files
+    for month_key, average in monthly_average_values.items():
         # Extract year and month from the key (YYYY-MM format)
         year, month = month_key.split('-')
-        
-        # Create directory structure
-        directory = os.path.join("api", "monthly", year)
-        os.makedirs(directory, exist_ok=True)
-        
-        # Create file path
-        file_path = os.path.join(directory, month)
-        
-        # Check if content would change
-        content_changed = True
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, 'r') as f:
-                    existing_value = f.read().strip()
-                    content_changed = (existing_value != str(average))
-            except:
-                pass
-        
-        # Write average to file
-        with open(file_path, 'w') as f:
-            f.write(str(average))
-            
-        if content_changed:
-            print(f'{"Created" if not os.path.exists(file_path) else "Updated"} monthly average for {month_key} ({average})')
-            months_processed += 1
         
         # Update or create the year's JSON file
         generate_yearly_json(year, month, average)
     
-    return {"months_processed": months_processed}
+    return {"months_processed": months_processed, "monthly_averages": monthly_average_values}
 
 def generate_yearly_json(year, month, value):
     """
@@ -350,8 +303,7 @@ def generate_monthly_json(year: str, month: str, daily_data: dict) -> None:
 
 def send_request_per_day(year=2025, month=4):
     """
-    Fetch daily Euribor rates and save them to files.
-    Each rate is saved in a file named by the date (YYYY-MM-DD).
+    Fetch daily Euribor rates and generate JSON files.
     
     Args:
         year (int): The year to fetch data for
@@ -380,7 +332,6 @@ def send_request_per_day(year=2025, month=4):
 def send_request_per_month(year=2025):
     """
     Fetch Euribor rates for a specific year and calculate monthly averages.
-    Each monthly average is saved in a file named by year and month (YYYY-MM).
     
     Args:
         year (int): The year to fetch data for
@@ -399,100 +350,49 @@ def send_request_per_month(year=2025):
 def generate_all_yearly_json():
     """
     Generate JSON files with monthly averages for all years
-    by reading data from existing files.
+    by fetching and processing data directly.
     """
-    monthly_dir = os.path.join("api", "monthly")
+    current_year = datetime.now().year
     
-    if not os.path.exists(monthly_dir):
-        print("No monthly data found. Run send_request_per_month first.")
-        return
-    
-    # List all year directories
-    year_dirs = [d for d in os.listdir(monthly_dir) 
-                if os.path.isdir(os.path.join(monthly_dir, d))]
-    
-    # Sort year directories numerically
-    year_dirs.sort(key=int)
+    # Generate yearly JSON files for the past years that we want to track
+    start_year = 1999  # Start from 1999 or any other year you want
     
     # Track statistics for reporting
     years_processed = 0
-    months_added = 0
-    months_updated = 0
+    months_processed = 0
     earliest_year = None
     latest_year = None
     
-    for year in year_dirs:
-        year_path = os.path.join(monthly_dir, year)
+    for year in range(start_year, current_year + 1):
+        result = send_request_per_month(year)
         
-        # List all month files in this year directory
-        month_files = [f for f in os.listdir(year_path) 
-                      if os.path.isfile(os.path.join(year_path, f))]
-        
-        if month_files:  # Only count year if it has months
+        if result["months_processed"] > 0:
             years_processed += 1
+            months_processed += result["months_processed"]
             
-            # Track earliest and latest years that have data
-            if earliest_year is None or int(year) < int(earliest_year):
+            # Track earliest and latest years
+            if earliest_year is None or year < earliest_year:
                 earliest_year = year
-            if latest_year is None or int(year) > int(latest_year):
+            if latest_year is None or year > latest_year:
                 latest_year = year
-            
-        for month in month_files:
-            # Read the monthly average
-            with open(os.path.join(year_path, month), 'r') as f:
-                value = float(f.read().strip())
-            
-            # Keep track of previous state
-            json_file = os.path.join("api", year, "index.json")
-            had_month_before = False
-            previous_value = None
-            
-            if os.path.exists(json_file):
-                try:
-                    with open(json_file, 'r') as f:
-                        data = json.load(f)
-                        if month in data:
-                            had_month_before = True
-                            previous_value = data[month]["value"]
-                except (json.JSONDecodeError, FileNotFoundError):
-                    pass
-            
-            # Generate or update the JSON file
-            generate_yearly_json(year, month, value)
-            
-            # Update statistics based on what changed
-            if not had_month_before:
-                months_added += 1
-            elif previous_value != str(value):
-                months_updated += 1
     
     # Report statistics if any work was done
     if years_processed > 0:
         year_range = f"from {earliest_year} to {latest_year}" if earliest_year and latest_year else ""
         print(f"JSON files processed for {years_processed} years ({year_range}).")
-        if months_added > 0:
-            print(f"Added {months_added} new month entries.")
-        if months_updated > 0:
-            print(f"Updated {months_updated} existing month entries.")
+        print(f"Processed {months_processed} months of data.")
     else:
-        print("No monthly data found to process.")
+        print("No data found to process.")
 
 def generate_all_monthly_json():
     """
-    Generate JSON files with daily data for all months by reading from daily files.
+    Generate JSON files with daily data for all months by fetching and processing data.
     """
-    daily_dir = os.path.join("api", "daily")
+    current_year = datetime.now().year
+    current_month = datetime.now().month
     
-    if not os.path.exists(daily_dir):
-        print("No daily data found. Run send_request_per_day first.")
-        return
-    
-    # List all year directories
-    year_dirs = [d for d in os.listdir(daily_dir) 
-                if os.path.isdir(os.path.join(daily_dir, d))]
-    
-    # Sort year directories numerically
-    year_dirs.sort(key=int)
+    # Generate monthly JSON files for the past years that we want to track
+    start_year = 1999  # Start from 1999 or any other year you want
     
     # Track statistics for reporting
     years_processed = 0
@@ -501,46 +401,29 @@ def generate_all_monthly_json():
     earliest_year = None
     latest_year = None
     
-    for year in year_dirs:
-        year_path = os.path.join(daily_dir, year)
+    for year in range(start_year, current_year + 1):
         year_has_data = False
         
-        # List all month directories in this year
-        month_dirs = [d for d in os.listdir(year_path) 
-                     if os.path.isdir(os.path.join(year_path, d))]
+        # Determine how many months to process for this year
+        max_month = 12
+        if year == current_year:
+            max_month = current_month
         
-        # Sort month directories numerically
-        month_dirs.sort(key=int)
-        
-        for month in month_dirs:
-            month_path = os.path.join(year_path, month)
-            daily_data = {}
+        for month in range(1, max_month + 1):
+            result = send_request_per_day(year, month)
             
-            # List all day files in this month
-            day_files = [f for f in os.listdir(month_path) 
-                        if os.path.isfile(os.path.join(month_path, f))]
-            
-            if day_files:  # Only process if month has days
+            if result["days_processed"] > 0:
                 months_processed += 1
+                days_processed += result["days_processed"]
                 year_has_data = True
-                
-                for day in day_files:
-                    # Read the daily rate
-                    with open(os.path.join(month_path, day), 'r') as f:
-                        value = float(f.read().strip())
-                    
-                    daily_data[day] = value
-                    days_processed += 1
-                
-                # Generate or update the monthly JSON file
-                generate_monthly_json(year, month, daily_data)
         
         if year_has_data:
             years_processed += 1
-            # Track earliest and latest years that have data
-            if earliest_year is None or int(year) < int(earliest_year):
+            
+            # Track earliest and latest years
+            if earliest_year is None or year < earliest_year:
                 earliest_year = year
-            if latest_year is None or int(year) > int(latest_year):
+            if latest_year is None or year > latest_year:
                 latest_year = year
     
     # Report statistics if any work was done
@@ -549,7 +432,7 @@ def generate_all_monthly_json():
         print(f"Monthly JSON files processed for {years_processed} years ({year_range}).")
         print(f"Processed {months_processed} months with {days_processed} days of data.")
     else:
-        print("No daily data found to process.")
+        print("No data found to process.")
 
 # Only run this if the script is executed directly
 if __name__ == "__main__":
