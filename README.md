@@ -4,6 +4,8 @@ This project provides a simple API to access EURIBOR rates data. The data is aut
 
 ## API Endpoints
 
+> **Note about GitHub Pages**: This API is hosted on GitHub Pages, which automatically serves `index.json` files when a directory URL is accessed. This means you can omit `index.json` from all JSON endpoint URLs.
+
 ### Daily Rates
 
 - Format: `https://patoroco.github.io/euribor/api/daily/{YYYY}/{MM}/{DD}`
@@ -20,9 +22,11 @@ This project provides a simple API to access EURIBOR rates data. The data is aut
 
 #### Yearly JSON with Monthly Averages
 
-- Format: `https://patoroco.github.io/euribor/api/{YYYY}/index.json`
-- Example: `https://patoroco.github.io/euribor/api/2024/index.json`
+- Format: `https://patoroco.github.io/euribor/api/{YYYY}`
+- Example: `https://patoroco.github.io/euribor/api/2024`
 - Returns: JSON object with monthly average EURIBOR rates for the specified year
+
+> **Note**: GitHub Pages automatically serves `index.json` files when accessing a directory URL, so you don't need to include `index.json` in the URL path.
 
 Example response:
 
@@ -48,9 +52,11 @@ Example response:
 
 #### Monthly JSON with Daily Rates
 
-- Format: `https://patoroco.github.io/euribor/api/{YYYY}/{MM}/index.json`
-- Example: `https://patoroco.github.io/euribor/api/2024/12/index.json`
+- Format: `https://patoroco.github.io/euribor/api/{YYYY}/{MM}`
+- Example: `https://patoroco.github.io/euribor/api/2024/12`
 - Returns: JSON object with daily EURIBOR rates for the specified month
+
+> **Note**: GitHub Pages automatically serves `index.json` files when accessing a directory URL, making it unnecessary to include `index.json` in the URL path.
 
 Example response:
 
@@ -113,15 +119,17 @@ api/
 │   └── 2025/
 │       └── ...
 ├── 2024/
-│   ├── index.json  # JSON with all monthly averages for 2024
+│   ├── index.json  # JSON with all monthly averages for 2024 (accessible via /api/2024/)
 │   ├── 01/
-│   │   └── index.json  # JSON with all daily rates for January 2024
+│   │   └── index.json  # JSON with all daily rates for January 2024 (accessible via /api/2024/01/)
 │   ├── 02/
-│   │   └── index.json  # JSON with all daily rates for February 2024
+│   │   └── index.json  # JSON with all daily rates for February 2024 (accessible via /api/2024/02/)
 │   └── ...
 └── 2025/
     └── ...
 ```
+
+Each of the `index.json` files can be accessed through GitHub Pages by simply using the directory URL (without explicitly referencing the filename). For example, `https://patoroco.github.io/euribor/api/2024/` will serve the yearly JSON file for 2024.
 
 ## Development
 
@@ -278,11 +286,11 @@ function EURIBOR_JSON(type, date, key, field = "value") {
   let url;
   if (type === "monthly") {
     // Yearly JSON with monthly data
-    url = `https://patoroco.github.io/euribor/api/${year}/index.json`;
+    url = `https://patoroco.github.io/euribor/api/${year}`;
   } else if (type === "daily") {
     // Monthly JSON with daily data
     if (!month) return "MISSING_MONTH";
-    url = `https://patoroco.github.io/euribor/api/${year}/${month}/index.json`;
+    url = `https://patoroco.github.io/euribor/api/${year}/${month}`;
   } else {
     return "INVALID_TYPE";
   }
@@ -356,8 +364,10 @@ function EURIBOR_JSON_MONTHLY(year, month) {
 5. In your sheet, you can now use:
    - `=EURIBOR_DAILY("2024/12/27")` or `=EURIBOR_DAILY(DATE(2024,12,27))` for daily rates (plain text format)
    - `=EURIBOR_MONTHLY("2024/12")` or `=EURIBOR_MONTHLY(DATE(2024,12,1))` for monthly averages (plain text format)
-   - `=EURIBOR_JSON_DAILY("2024/12", 27)` for daily rates from the JSON API
-   - `=EURIBOR_JSON_MONTHLY(2024, 12)` for monthly averages from the JSON API
+   - `=EURIBOR_JSON_DAILY("2024/12", 27)` for daily rates from the JSON API (uses directory URLs)
+   - `=EURIBOR_JSON_MONTHLY(2024, 12)` for monthly averages from the JSON API (uses directory URLs)
+
+> **Note**: The JSON functions (`EURIBOR_JSON_DAILY` and `EURIBOR_JSON_MONTHLY`) use GitHub Pages' automatic index.json serving feature, making the URLs simpler and more intuitive.
 
 ## License
 
