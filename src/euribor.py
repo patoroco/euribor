@@ -66,6 +66,8 @@ def process_daily_data(data):
         return {"days_processed": 0}
     
     days_processed = 0
+    # Track daily data for each month to generate monthly JSON files
+    monthly_daily_data = {}
         
     for series in data:
         for point in series['Data']:
@@ -102,6 +104,21 @@ def process_daily_data(data):
             if content_changed:
                 print(f'{"Created" if not os.path.exists(file_path) else "Updated"} daily rate for {date} ({value})')
                 days_processed += 1
+            
+            # Add data to monthly_daily_data for JSON files
+            if year not in monthly_daily_data:
+                monthly_daily_data[year] = {}
+            if month not in monthly_daily_data[year]:
+                monthly_daily_data[year][month] = {}
+            
+            monthly_daily_data[year][month][day] = value
+    
+    # Generate JSON files for each month
+    for year in monthly_daily_data:
+        for month in monthly_daily_data[year]:
+            daily_data = monthly_daily_data[year][month]
+            if daily_data:  # Only process if there's data
+                generate_monthly_json(year, month, daily_data)
     
     return {"days_processed": days_processed}
 
@@ -247,6 +264,78 @@ def generate_yearly_json(year, month, value):
     elif should_update_date:
         print(f'Updated value for {year}-{month} in {json_file}')
 
+def generate_monthly_json(year, month, daily_data):
+    """
+    Generate or update JSON file with daily Euribor rates for a specific month.
+    
+    Args:
+        year (str): The year
+        month (str): The month (01-12)
+        daily_data (dict): Dictionary with daily Euribor rates (day -> value)
+    """
+    # Create directory structure
+    month_dir = os.path.join("api", year, month)
+    os.makedirs(month_dir, exist_ok=True)
+    
+    # JSON file path
+    json_file = os.path.join(month_dir, "index.json")
+    
+    # Initialize data structure
+    data = {}
+    
+    # Read existing file if it exists
+    if os.path.exists(json_file):
+        try:
+            with open(json_file, 'r') as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            # If file exists but is not valid JSON, initialize as empty
+            data = {}
+    
+    # Update data for each day
+    days_added = 0
+    days_updated = 0
+    
+    for day, value in daily_data.items():
+        # Check if we need to update the last_modified date
+        # Only update if the day doesn't exist or if the value has changed
+        should_update_date = False
+        is_new_data = False
+        
+        if day not in data:
+            should_update_date = True
+            is_new_data = True
+            days_added += 1
+        elif data[day]["value"] != str(value):
+            should_update_date = True
+            days_updated += 1
+        
+        # Current datetime in ISO format for last_modified
+        current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        
+        # If entry exists and we don't need to update the date, keep the old last_modified
+        last_modified = current_datetime
+        if day in data and not should_update_date and "_meta" in data[day] and "last_modified" in data[day]["_meta"]:
+            last_modified = data[day]["_meta"]["last_modified"]
+        
+        # Update data for this day
+        data[day] = {
+            "value": str(value),
+            "_meta": {
+                "full_date": f"{year}-{month}-{day}",
+                "last_modified": last_modified
+            }
+        }
+    
+    # Write updated data to JSON file
+    with open(json_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    
+    # Only print message if the data was actually updated or added
+    if days_added > 0 or days_updated > 0:
+        action = "Created" if not os.path.exists(json_file) else "Updated"
+        print(f'{action} daily JSON data for {year}-{month} ({days_added} days added, {days_updated} days updated)')
+
 def send_request_per_day(year=2025, month=4):
     """
     Fetch daily Euribor rates and save them to files.
@@ -310,10 +399,15 @@ def generate_all_yearly_json():
     year_dirs = [d for d in os.listdir(monthly_dir) 
                 if os.path.isdir(os.path.join(monthly_dir, d))]
     
+    # Sort year directories numerically
+    year_dirs.sort(key=int)
+    
     # Track statistics for reporting
     years_processed = 0
     months_added = 0
     months_updated = 0
+    earliest_year = None
+    latest_year = None
     
     for year in year_dirs:
         year_path = os.path.join(monthly_dir, year)
@@ -324,6 +418,12 @@ def generate_all_yearly_json():
         
         if month_files:  # Only count year if it has months
             years_processed += 1
+            
+            # Track earliest and latest years that have data
+            if earliest_year is None or int(year) < int(earliest_year):
+                earliest_year = year
+            if latest_year is None or int(year) > int(latest_year):
+                latest_year = year
             
         for month in month_files:
             # Read the monthly average
@@ -356,13 +456,88 @@ def generate_all_yearly_json():
     
     # Report statistics if any work was done
     if years_processed > 0:
-        print(f"JSON files processed for {years_processed} years.")
+        year_range = f"from {earliest_year} to {latest_year}" if earliest_year and latest_year else ""
+        print(f"JSON files processed for {years_processed} years ({year_range}).")
         if months_added > 0:
             print(f"Added {months_added} new month entries.")
         if months_updated > 0:
             print(f"Updated {months_updated} existing month entries.")
     else:
         print("No monthly data found to process.")
+
+def generate_all_monthly_json():
+    """
+    Generate JSON files with daily data for all months by reading from daily files.
+    """
+    daily_dir = os.path.join("api", "daily")
+    
+    if not os.path.exists(daily_dir):
+        print("No daily data found. Run send_request_per_day first.")
+        return
+    
+    # List all year directories
+    year_dirs = [d for d in os.listdir(daily_dir) 
+                if os.path.isdir(os.path.join(daily_dir, d))]
+    
+    # Sort year directories numerically
+    year_dirs.sort(key=int)
+    
+    # Track statistics for reporting
+    years_processed = 0
+    months_processed = 0
+    days_processed = 0
+    earliest_year = None
+    latest_year = None
+    
+    for year in year_dirs:
+        year_path = os.path.join(daily_dir, year)
+        year_has_data = False
+        
+        # List all month directories in this year
+        month_dirs = [d for d in os.listdir(year_path) 
+                     if os.path.isdir(os.path.join(year_path, d))]
+        
+        # Sort month directories numerically
+        month_dirs.sort(key=int)
+        
+        for month in month_dirs:
+            month_path = os.path.join(year_path, month)
+            daily_data = {}
+            
+            # List all day files in this month
+            day_files = [f for f in os.listdir(month_path) 
+                        if os.path.isfile(os.path.join(month_path, f))]
+            
+            if day_files:  # Only process if month has days
+                months_processed += 1
+                year_has_data = True
+                
+                for day in day_files:
+                    # Read the daily rate
+                    with open(os.path.join(month_path, day), 'r') as f:
+                        value = float(f.read().strip())
+                    
+                    daily_data[day] = value
+                    days_processed += 1
+                
+                # Generate or update the monthly JSON file
+                generate_monthly_json(year, month, daily_data)
+        
+        if year_has_data:
+            years_processed += 1
+            # Track earliest and latest years that have data
+            if earliest_year is None or int(year) < int(earliest_year):
+                earliest_year = year
+            if latest_year is None or int(year) > int(latest_year):
+                latest_year = year
+    
+    # Report statistics if any work was done
+    if years_processed > 0:
+        year_range = f"from {earliest_year} to {latest_year}" if earliest_year and latest_year else ""
+        print(f"Monthly JSON files processed for {years_processed} years ({year_range}).")
+        print(f"Processed {months_processed} months with {days_processed} days of data.")
+    else:
+        print("No daily data found to process.")
 
 # Only run this if the script is executed directly
 if __name__ == "__main__":
@@ -379,5 +554,8 @@ if __name__ == "__main__":
     
     # Generate JSON files for all years
     generate_all_yearly_json()
+    
+    # Generate JSON files for all months
+    generate_all_monthly_json()
     
     print(f"Process completed.")
