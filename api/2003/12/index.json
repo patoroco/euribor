@@ -1,0 +1,219 @@
+{
+  "01": {
+    "value": "2.503",
+    "_meta": {
+      "full_date": "2003-12-01",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "02": {
+    "value": "2.503",
+    "_meta": {
+      "full_date": "2003-12-02",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "03": {
+    "value": "2.483",
+    "_meta": {
+      "full_date": "2003-12-03",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "04": {
+    "value": "2.488",
+    "_meta": {
+      "full_date": "2003-12-04",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "05": {
+    "value": "2.444",
+    "_meta": {
+      "full_date": "2003-12-05",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "06": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-06",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "07": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-07",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "08": {
+    "value": "2.385",
+    "_meta": {
+      "full_date": "2003-12-08",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "09": {
+    "value": "2.382",
+    "_meta": {
+      "full_date": "2003-12-09",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "10": {
+    "value": "2.41",
+    "_meta": {
+      "full_date": "2003-12-10",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "11": {
+    "value": "2.415",
+    "_meta": {
+      "full_date": "2003-12-11",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "12": {
+    "value": "2.373",
+    "_meta": {
+      "full_date": "2003-12-12",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "13": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-13",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "14": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-14",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "15": {
+    "value": "2.371",
+    "_meta": {
+      "full_date": "2003-12-15",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "16": {
+    "value": "2.353",
+    "_meta": {
+      "full_date": "2003-12-16",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "17": {
+    "value": "2.349",
+    "_meta": {
+      "full_date": "2003-12-17",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "18": {
+    "value": "2.312",
+    "_meta": {
+      "full_date": "2003-12-18",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "19": {
+    "value": "2.322",
+    "_meta": {
+      "full_date": "2003-12-19",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "20": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-20",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "21": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-21",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "22": {
+    "value": "2.326",
+    "_meta": {
+      "full_date": "2003-12-22",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "23": {
+    "value": "2.327",
+    "_meta": {
+      "full_date": "2003-12-23",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "24": {
+    "value": "2.33",
+    "_meta": {
+      "full_date": "2003-12-24",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "25": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-25",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "26": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-26",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "27": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-27",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "28": {
+    "value": null,
+    "_meta": {
+      "full_date": "2003-12-28",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "29": {
+    "value": "2.304",
+    "_meta": {
+      "full_date": "2003-12-29",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "30": {
+    "value": "2.311",
+    "_meta": {
+      "full_date": "2003-12-30",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  },
+  "31": {
+    "value": "2.305",
+    "_meta": {
+      "full_date": "2003-12-31",
+      "last_modified": "2025-05-18T21:21:09"
+    }
+  }
+}
