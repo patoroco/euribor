@@ -1,0 +1,23 @@
+{
+  "01": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-06-01",
+      "last_modified": "2025-06-03T09:10:26"
+    }
+  },
+  "02": {
+    "value": "2.057",
+    "_meta": {
+      "full_date": "2025-06-02",
+      "last_modified": "2025-06-03T09:10:26"
+    }
+  },
+  "03": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-06-03",
+      "last_modified": "2025-06-03T09:10:26"
+    }
+  }
+}
