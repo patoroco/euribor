@@ -12,5 +12,12 @@
       "full_date": "2025-10-02",
       "last_modified": "2025-10-02T10:08:46"
     }
+  },
+  "03": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-10-03",
+      "last_modified": "2025-10-03T09:08:45"
+    }
   }
 }
