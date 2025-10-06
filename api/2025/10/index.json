@@ -19,5 +19,26 @@
       "full_date": "2025-10-03",
       "last_modified": "2025-10-03T09:08:45"
     }
+  },
+  "04": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-10-04",
+      "last_modified": "2025-10-06T09:11:56"
+    }
+  },
+  "05": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-10-05",
+      "last_modified": "2025-10-06T09:11:56"
+    }
+  },
+  "06": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-10-06",
+      "last_modified": "2025-10-06T09:11:56"
+    }
   }
 }
