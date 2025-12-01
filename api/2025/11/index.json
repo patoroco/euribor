@@ -189,10 +189,24 @@
     }
   },
   "28": {
-    "value": null,
+    "value": "2.209",
     "_meta": {
       "full_date": "2025-11-28",
-      "last_modified": "2025-11-28T09:10:31"
+      "last_modified": "2025-12-01T09:16:01"
+    }
+  },
+  "29": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-11-29",
+      "last_modified": "2025-12-01T09:16:01"
+    }
+  },
+  "30": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-11-30",
+      "last_modified": "2025-12-01T09:16:01"
     }
   }
 }
