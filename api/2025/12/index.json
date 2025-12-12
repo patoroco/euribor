@@ -75,5 +75,12 @@
       "full_date": "2025-12-11",
       "last_modified": "2025-12-11T09:14:40"
     }
+  },
+  "12": {
+    "value": null,
+    "_meta": {
+      "full_date": "2025-12-12",
+      "last_modified": "2025-12-12T09:14:11"
+    }
   }
 }
