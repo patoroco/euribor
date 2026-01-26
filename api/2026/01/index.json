@@ -154,10 +154,31 @@
     }
   },
   "23": {
-    "value": null,
+    "value": "2.243",
     "_meta": {
       "full_date": "2026-01-23",
-      "last_modified": "2026-01-23T09:18:12"
+      "last_modified": "2026-01-26T09:22:06"
+    }
+  },
+  "24": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-01-24",
+      "last_modified": "2026-01-26T09:22:06"
+    }
+  },
+  "25": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-01-25",
+      "last_modified": "2026-01-26T09:22:06"
+    }
+  },
+  "26": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-01-26",
+      "last_modified": "2026-01-26T09:22:06"
     }
   }
 }
