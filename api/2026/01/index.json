@@ -201,5 +201,12 @@
       "full_date": "2026-01-29",
       "last_modified": "2026-01-29T09:29:36"
     }
+  },
+  "30": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-01-30",
+      "last_modified": "2026-01-30T09:26:12"
+    }
   }
 }
