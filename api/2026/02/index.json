@@ -1,0 +1,23 @@
+{
+  "01": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-02-01",
+      "last_modified": "2026-02-03T10:27:24"
+    }
+  },
+  "02": {
+    "value": "2.218",
+    "_meta": {
+      "full_date": "2026-02-02",
+      "last_modified": "2026-02-03T10:27:24"
+    }
+  },
+  "03": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-02-03",
+      "last_modified": "2026-02-03T10:27:24"
+    }
+  }
+}
