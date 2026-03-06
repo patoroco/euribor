@@ -33,5 +33,12 @@
       "full_date": "2026-03-05",
       "last_modified": "2026-03-05T09:30:02"
     }
+  },
+  "06": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-03-06",
+      "last_modified": "2026-03-06T09:25:38"
+    }
   }
 }
