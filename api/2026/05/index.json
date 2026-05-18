@@ -103,5 +103,26 @@
       "full_date": "2026-05-15",
       "last_modified": "2026-05-15T11:09:20"
     }
+  },
+  "16": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-05-16",
+      "last_modified": "2026-05-18T12:17:30"
+    }
+  },
+  "17": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-05-17",
+      "last_modified": "2026-05-18T12:17:30"
+    }
+  },
+  "18": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-05-18",
+      "last_modified": "2026-05-18T12:17:30"
+    }
   }
 }
