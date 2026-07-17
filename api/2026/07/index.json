@@ -98,17 +98,24 @@
     }
   },
   "15": {
-    "value": null,
+    "value": "2.916",
     "_meta": {
       "full_date": "2026-07-15",
-      "last_modified": "2026-07-15T10:39:19"
+      "last_modified": "2026-07-17T10:27:22"
     }
   },
   "16": {
-    "value": null,
+    "value": "2.876",
     "_meta": {
       "full_date": "2026-07-16",
-      "last_modified": "2026-07-16T10:46:25"
+      "last_modified": "2026-07-17T10:27:22"
+    }
+  },
+  "17": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-07-17",
+      "last_modified": "2026-07-17T10:27:22"
     }
   }
 }
