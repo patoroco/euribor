@@ -133,17 +133,24 @@
     }
   },
   "20": {
-    "value": null,
+    "value": "2.881",
     "_meta": {
       "full_date": "2026-07-20",
-      "last_modified": "2026-07-20T11:31:24"
+      "last_modified": "2026-07-22T10:55:01"
     }
   },
   "21": {
-    "value": null,
+    "value": "2.918",
     "_meta": {
       "full_date": "2026-07-21",
-      "last_modified": "2026-07-21T10:53:40"
+      "last_modified": "2026-07-22T10:55:01"
+    }
+  },
+  "22": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-07-22",
+      "last_modified": "2026-07-22T10:55:01"
     }
   }
 }
