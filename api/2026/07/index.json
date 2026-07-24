@@ -154,10 +154,17 @@
     }
   },
   "23": {
-    "value": null,
+    "value": "2.947",
     "_meta": {
       "full_date": "2026-07-23",
-      "last_modified": "2026-07-23T10:54:57"
+      "last_modified": "2026-07-24T10:51:15"
+    }
+  },
+  "24": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-07-24",
+      "last_modified": "2026-07-24T10:51:15"
     }
   }
 }
