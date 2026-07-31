@@ -196,17 +196,24 @@
     }
   },
   "29": {
-    "value": null,
+    "value": "2.941",
     "_meta": {
       "full_date": "2026-07-29",
-      "last_modified": "2026-07-29T11:11:16"
+      "last_modified": "2026-07-31T11:14:00"
     }
   },
   "30": {
-    "value": null,
+    "value": "2.958",
     "_meta": {
       "full_date": "2026-07-30",
-      "last_modified": "2026-07-30T10:55:17"
+      "last_modified": "2026-07-31T11:14:00"
+    }
+  },
+  "31": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-07-31",
+      "last_modified": "2026-07-31T11:14:00"
     }
   }
 }
