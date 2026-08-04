@@ -1,0 +1,30 @@
+{
+  "01": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-08-01",
+      "last_modified": "2026-08-04T11:12:04"
+    }
+  },
+  "02": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-08-02",
+      "last_modified": "2026-08-04T11:12:04"
+    }
+  },
+  "03": {
+    "value": "2.939",
+    "_meta": {
+      "full_date": "2026-08-03",
+      "last_modified": "2026-08-04T11:12:04"
+    }
+  },
+  "04": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-08-04",
+      "last_modified": "2026-08-04T11:12:04"
+    }
+  }
+}
