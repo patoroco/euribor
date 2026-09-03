@@ -7,10 +7,17 @@
     }
   },
   "02": {
-    "value": null,
+    "value": "3.068",
     "_meta": {
       "full_date": "2026-09-02",
-      "last_modified": "2026-09-02T13:00:43"
+      "last_modified": "2026-09-03T13:03:04"
+    }
+  },
+  "03": {
+    "value": null,
+    "_meta": {
+      "full_date": "2026-09-03",
+      "last_modified": "2026-09-03T13:03:04"
     }
   }
 }
